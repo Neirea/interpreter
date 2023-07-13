@@ -1,4 +1,4 @@
-import { lookupIdent, Token, TokenType, token, newToken } from "../token";
+import { lookupIdent, Token, token, newToken } from "../token";
 
 export class Lexer {
     private position: number = 0;
@@ -133,20 +133,14 @@ export class Lexer {
     }
 }
 
-const _0 = "0".charCodeAt(0);
-const _9 = "9".charCodeAt(0);
-const a = "a".charCodeAt(0);
-const z = "z".charCodeAt(0);
-const A = "A".charCodeAt(0);
-const Z = "Z".charCodeAt(0);
-const _ = "_".charCodeAt(0);
-
-function isLetter(ch: string): boolean {
-    const char = ch.charCodeAt(0);
-    return (a <= char && char <= z) || (A <= char && char <= Z) || char == _;
+function isLetter(char: string): boolean {
+    return (
+        ("a" <= char && char <= "z") ||
+        ("A" <= char && char <= "Z") ||
+        char == "_"
+    );
 }
 
-function isDigit(ch: string): boolean {
-    const char = ch.charCodeAt(0);
-    return _0 <= char && _9 >= char;
+function isDigit(char: string): boolean {
+    return "0" <= char && "9" >= char;
 }
