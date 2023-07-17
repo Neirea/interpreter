@@ -1,7 +1,7 @@
 export type TokenType = string;
 
 export class Token {
-    constructor(public Type: TokenType, public Literal: String) {}
+    constructor(public type: TokenType, public literal: string) {}
 }
 
 export const token = {
