@@ -17,7 +17,7 @@ import { Lexer } from "../lexer";
 
 test("let statements", () => {
     const tests = [
-        { input: "let x = 5;", expectedIdentifier: "x", expectedValue: 5 },
+        { input: "let x1x = 5;", expectedIdentifier: "x1x", expectedValue: 5 },
         {
             input: "let y = true;",
             expectedIdentifier: "y",
@@ -472,7 +472,7 @@ function checkParserErrors(parser: Parser) {
     if (errors.length === 0) {
         return;
     }
-    // console.error(`parser has ${errors.length} errors`);
+    console.error(`parser has ${errors.length} errors`);
     for (const msg of errors) {
         throw new Error(`parser error: ${msg}`);
     }

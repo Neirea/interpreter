@@ -97,8 +97,10 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 }
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	//any: add numbers
-	for isLetter(l.ch) {
+	if isLetter(l.ch) {
+		l.readChar()
+	}
+	for isLetterOrDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -117,6 +119,9 @@ func (l *Lexer) skipWhitespace() {
 }
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+}
+func isLetterOrDigit(ch byte) bool {
+	return isLetter(ch) || isDigit(ch)
 }
 func (l *Lexer) readNumber() string {
 	position := l.position

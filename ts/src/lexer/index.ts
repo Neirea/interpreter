@@ -109,7 +109,8 @@ export class Lexer {
     }
     private readIdentifier(): string {
         const position = this.position;
-        while (isLetter(this.ch)) {
+        if (isLetter(this.ch)) this.readChar();
+        while (isLetterOrDigit(this.ch)) {
             this.readChar();
         }
         return this.input.slice(position, this.position);
@@ -139,6 +140,10 @@ function isLetter(char: string): boolean {
         ("A" <= char && char <= "Z") ||
         char == "_"
     );
+}
+
+function isLetterOrDigit(char: string) {
+    return isLetter(char) || isDigit(char);
 }
 
 function isDigit(char: string): boolean {
