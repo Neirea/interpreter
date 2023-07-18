@@ -4,11 +4,12 @@ import {
     CallExpression,
     Expression,
     ExpressionStatement,
+    FloatLiteral,
     FunctionLiteral,
     Identifier,
     IfExpression,
     InfixExpression,
-    Integerliteral,
+    IntegerLiteral,
     LetStatement,
     PrefixExpression,
     Program,
@@ -64,6 +65,7 @@ export class Parser {
         this.registerPrefix(token.FALSE, () => this.parseBoolean());
         this.registerPrefix(token.IDENT, () => this.parseIdentifier());
         this.registerPrefix(token.INT, () => this.parseIntegerLiteral());
+        this.registerPrefix(token.FLOAT, () => this.parseFloatLiteral());
         this.registerPrefix(token.BANG, () => this.parsePrefixExpression());
         this.registerPrefix(token.MINUS, () => this.parsePrefixExpression());
         this.registerPrefix(token.LPAREN, () => this.parseGroupedExpression());
@@ -144,7 +146,16 @@ export class Parser {
             this.errors.push(msg);
             return;
         }
-        return new Integerliteral(this.curToken, value);
+        return new IntegerLiteral(this.curToken, value);
+    }
+    private parseFloatLiteral(): Expression | undefined {
+        const value = +this.curToken.literal;
+        if (isNaN(value)) {
+            const msg = `could not parse ${this.curToken.literal} as integer`;
+            this.errors.push(msg);
+            return;
+        }
+        return new FloatLiteral(this.curToken, value);
     }
 
     private parseExpression(precedence: number): Expression | undefined {

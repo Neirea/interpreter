@@ -13,7 +13,7 @@ test("test lexer", () => {
 		!-/*5;
 		5 < 10 > 5;
 
-		if (5 < 10) {
+		if (5 < 10.52) {
 			return true;
 		} else {
 			return false;
@@ -75,7 +75,7 @@ test("test lexer", () => {
         { type: token.LPAREN, literal: "(" },
         { type: token.INT, literal: "5" },
         { type: token.LT, literal: "<" },
-        { type: token.INT, literal: "10" },
+        { type: token.FLOAT, literal: "10.52" },
         { type: token.RPAREN, literal: ")" },
         { type: token.LBRACE, literal: "{" },
         { type: token.RETURN, literal: "return" },

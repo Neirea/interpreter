@@ -104,7 +104,18 @@ export class BlockStatement implements Statement {
     }
 }
 
-export class Integerliteral implements Expression {
+export class IntegerLiteral implements Expression {
+    constructor(public token: Token, public value: number) {}
+
+    expressionNode() {}
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return this.token.literal;
+    }
+}
+export class FloatLiteral implements Expression {
     constructor(public token: Token, public value: number) {}
 
     expressionNode() {}

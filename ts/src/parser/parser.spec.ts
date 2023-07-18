@@ -4,11 +4,12 @@ import {
     CallExpression,
     Expression,
     ExpressionStatement,
+    FloatLiteral,
     FunctionLiteral,
     Identifier,
     IfExpression,
     InfixExpression,
-    Integerliteral,
+    IntegerLiteral,
     LetStatement,
     PrefixExpression,
     ReturnStatement,
@@ -94,10 +95,25 @@ test("test integer literal expressiom", () => {
     expect(program.statements.length).toEqual(1);
     const stmt = program.statements[0] as ExpressionStatement;
     expect(stmt).toBeInstanceOf(ExpressionStatement);
-    const ident = stmt.expression as Integerliteral;
-    expect(ident).toBeInstanceOf(Integerliteral);
+    const ident = stmt.expression as IntegerLiteral;
+    expect(ident).toBeInstanceOf(IntegerLiteral);
     expect(ident.value).toEqual(5);
     expect(ident.tokenLiteral()).toEqual("5");
+});
+
+test("test float literal expressiom", () => {
+    const input = "5.342;";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program.statements.length).toEqual(1);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    const ident = stmt.expression as FloatLiteral;
+    expect(ident).toBeInstanceOf(FloatLiteral);
+    expect(ident.value).toEqual(5.342);
+    expect(ident.tokenLiteral()).toEqual("5.342");
 });
 
 test("test parsing prefix epxressions", () => {
@@ -436,7 +452,8 @@ function testLiteralExpression(exp: Expression, expected: any) {
     const type = typeof expected;
     switch (type) {
         case "number":
-            testIntegerLiteral(exp, expected);
+            if (expected % 1) testFloatLiteral(exp, expected);
+            else testIntegerLiteral(exp, expected);
             break;
         case "string":
             testIdentifier(exp, expected);
@@ -450,7 +467,12 @@ function testLiteralExpression(exp: Expression, expected: any) {
 }
 
 function testIntegerLiteral(exp: Expression, value: number) {
-    const il = exp as Integerliteral;
+    const il = exp as IntegerLiteral;
+    expect(il.value).toEqual(value);
+    expect(il.tokenLiteral()).toEqual(value.toString());
+}
+function testFloatLiteral(exp: Expression, value: number) {
+    const il = exp as FloatLiteral;
     expect(il.value).toEqual(value);
     expect(il.tokenLiteral()).toEqual(value.toString());
 }

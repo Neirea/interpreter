@@ -14,7 +14,7 @@ export class Lexer {
 
         switch (this.ch) {
             case "=":
-                if (this.peakChar() == "=") {
+                if (this.peekChar() == "=") {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
@@ -30,7 +30,7 @@ export class Lexer {
                 tok = newToken(token.MINUS, this.ch);
                 break;
             case "!":
-                if (this.peakChar() == "=") {
+                if (this.peekChar() == "=") {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
@@ -79,8 +79,11 @@ export class Lexer {
                     tok = newToken(type, literal);
                     return tok;
                 } else if (isDigit(this.ch)) {
-                    const type = token.INT;
+                    let type = token.INT;
                     const literal = this.readNumber();
+                    if (literal.includes(".")) {
+                        type = token.FLOAT;
+                    }
                     tok = newToken(type, literal);
                     return tok;
                 } else {
@@ -105,6 +108,12 @@ export class Lexer {
         while (isDigit(this.ch)) {
             this.readChar();
         }
+        if (this.ch === "." && isDigit(this.peekChar())) {
+            this.readChar();
+            while (isDigit(this.ch)) {
+                this.readChar();
+            }
+        }
         return this.input.slice(position, this.position);
     }
     private readIdentifier(): string {
@@ -116,7 +125,7 @@ export class Lexer {
         return this.input.slice(position, this.position);
     }
 
-    private peakChar(): string {
+    private peekChar(): string {
         return this.readPosition >= this.input.length
             ? "\0"
             : this.input[this.readPosition];

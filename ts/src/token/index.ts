@@ -10,6 +10,7 @@ export const token = {
     // Identifiers + literals
     IDENT: "IDENT", // add, foobar, x, y, ...
     INT: "INT", // 1343456
+    FLOAT: "FLOAT", // 134.3456
     // Operators
     ASSIGN: "=",
     EQ: "==",
