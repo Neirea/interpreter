@@ -4,10 +4,10 @@ interface INode {
     tokenLiteral: () => string;
     toString: () => string;
 }
-interface Statement extends INode {
+export interface Statement extends INode {
     statementNode: () => void; //dummy method
 }
-interface Expression extends INode {
+export interface Expression extends INode {
     expressionNode: () => void; //dummy method
 }
 
@@ -151,7 +151,7 @@ export class InfixExpression implements Expression {
     }
 }
 
-export class BooleanExpression implements Expression {
+export class BooleanLiteral implements Expression {
     constructor(public token: Token, public value: boolean) {}
 
     expressionNode() {}
@@ -168,7 +168,7 @@ export class IfExpression implements Expression {
         public token: Token,
         public condition: Expression,
         public consequence: BlockStatement,
-        public alternative: BlockStatement
+        public alternative?: BlockStatement
     ) {}
 
     expressionNode() {}
@@ -214,6 +214,6 @@ export class CallExpression implements Expression {
     }
     toString() {
         let argStrings = this.args.map((arg) => arg.toString());
-        return `${this.func.toString()}(${argStrings.join(",")})`;
+        return `${this.func.toString()}(${argStrings.join(", ")})`;
     }
 }
