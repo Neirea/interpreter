@@ -27,7 +27,7 @@ type Float struct {
 }
 
 func (i *Float) Type() ObjectType { return INTEGER_OBJ }
-func (i *Float) Inspect() string  { return fmt.Sprintf("%f", i.Value) }
+func (i *Float) Inspect() string  { return fmt.Sprintf("%g", i.Value) }
 
 type Boolean struct {
 	Value bool
