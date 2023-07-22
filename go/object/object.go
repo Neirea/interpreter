@@ -6,6 +6,7 @@ type ObjectType string
 
 const (
 	INTEGER_OBJ = "INTEGER"
+	FLOAT_OBJ   = "FLOAT"
 	BOOLEAN_OBJ = "BOOLEAN"
 	NULL_OBJ    = "NULL"
 )
@@ -26,7 +27,7 @@ type Float struct {
 	Value float64
 }
 
-func (i *Float) Type() ObjectType { return INTEGER_OBJ }
+func (i *Float) Type() ObjectType { return FLOAT_OBJ }
 func (i *Float) Inspect() string  { return fmt.Sprintf("%g", i.Value) }
 
 type Boolean struct {
