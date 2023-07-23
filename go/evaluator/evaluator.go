@@ -28,6 +28,10 @@ func Eval(node ast.Node) object.Object {
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
 		return evalPrefixExpression(node.Operator, right)
+	case *ast.InfixExpression:
+		left := Eval(node.Left)
+		right := Eval(node.Right)
+		return evalInfixExpression(node.Operator, left, right)
 	}
 
 	return nil
@@ -84,4 +88,70 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	default:
 		return NULL
 	}
+}
+
+func evalIntegerInfixExpression(
+	operator string,
+	leftVal, rightVal int64,
+) object.Object {
+	switch operator {
+	case "+":
+		return &object.Integer{Value: leftVal + rightVal}
+	case "-":
+		return &object.Integer{Value: leftVal - rightVal}
+	case "*":
+		return &object.Integer{Value: leftVal * rightVal}
+	case "/":
+		return &object.Integer{Value: leftVal / rightVal}
+	default:
+		return NULL
+	}
+}
+
+func evalFloatInfixExpression(
+	operator string,
+	leftVal, rightVal float64,
+) object.Object {
+	switch operator {
+	case "+":
+		return &object.Float{Value: leftVal + rightVal}
+	case "-":
+		return &object.Float{Value: leftVal - rightVal}
+	case "*":
+		return &object.Float{Value: leftVal * rightVal}
+	case "/":
+		return &object.Float{Value: leftVal / rightVal}
+	default:
+		return NULL
+	}
+}
+
+func evalInfixExpression(
+	operator string,
+	left, right object.Object,
+) object.Object {
+	isLeftInteger := left.Type() == object.INTEGER_OBJ
+	isRightInteger := right.Type() == object.INTEGER_OBJ
+	isLeftNumber := isLeftInteger || left.Type() == object.FLOAT_OBJ
+	isRightNumber := isRightInteger || right.Type() == object.FLOAT_OBJ
+
+	switch {
+	case isLeftInteger && isRightInteger:
+		leftVal := left.(*object.Integer).Value
+		rightVal := right.(*object.Integer).Value
+		return evalIntegerInfixExpression(operator, leftVal, rightVal)
+	case isLeftNumber && isRightNumber:
+		leftVal := getFloatNumber(left)
+		rightVal := getFloatNumber(right)
+		return evalFloatInfixExpression(operator, leftVal, rightVal)
+	default:
+		return NULL
+	}
+}
+
+func getFloatNumber(number object.Object) float64 {
+	if number.Type() == object.INTEGER_OBJ {
+		return float64(number.(*object.Integer).Value)
+	}
+	return number.(*object.Float).Value
 }
