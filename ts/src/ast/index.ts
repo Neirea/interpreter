@@ -1,6 +1,6 @@
 import { Token } from "../token";
 
-interface INode {
+export interface INode {
     tokenLiteral: () => string;
     toString: () => string;
 }
