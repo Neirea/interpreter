@@ -2,12 +2,16 @@ import readline from "readline";
 import { Lexer } from "../lexer";
 import { Parser } from "../parser";
 import os from "node:os";
+import { Environment } from "../object/enviroment";
+import { evalCode } from "../evaluator";
 
 const rs = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: ">> ",
 });
+
+const env = Environment.new();
 
 const user = os.userInfo().username;
 console.log(`Hello ${user}! This is the Monkey programming language!`);
@@ -23,7 +27,10 @@ rs.on("line", (input) => {
         printParserErrors(parser.errors);
         return;
     }
-    console.log(program.toString());
+    const evaluated = evalCode(program, env);
+    if (evaluated !== null) {
+        console.log(evaluated.inspect());
+    }
     rs.prompt();
 });
 
