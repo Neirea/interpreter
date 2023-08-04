@@ -21,8 +21,6 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}{
 		{"5", 5},
 		{"10", 10},
-		{"5", 5},
-		{"10", 10},
 		{"-5", -5},
 		{"-10", -10},
 		{"5 + 5 + 5 + 5 - 10", 10},
@@ -63,8 +61,6 @@ func TestEvalFloatExpression(t *testing.T) {
 	}{
 		{"5.31", 5.31},
 		{"10.54", 10.54},
-		{"-5.32", -5.32},
-		{"10.12", 10.12},
 		{"-5.04", -5.04},
 		{"-10.99", -10.99},
 		{"5 + 5.1 + 5 + 5.9 - 10", 11},
@@ -326,10 +322,11 @@ func TestFunctionApplication(t *testing.T) {
 
 func TestClosures(t *testing.T) {
 	input := `
-	let newAdder = fn(x) {
-	fn(y) { x + y };
-	};
-	let addTwo = newAdder(2);
-	addTwo(2);`
+		let newAdder = fn(x) {
+		fn(y) { x + y };
+		};
+		let addTwo = newAdder(2);
+		addTwo(2);
+	`
 	testIntegerObject(t, testEval(input), 4)
 }
