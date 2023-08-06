@@ -11,9 +11,10 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 	// Identifiers + literals
-	IDENT = "IDENT" // add, foobar, x, y, ...
-	INT   = "INT"   // 1343456
-	FLOAT = "FLOAT" // 134.3456
+	IDENT  = "IDENT" // add, foobar, x, y, ...
+	INT    = "INT"   // 1343456
+	FLOAT  = "FLOAT" // 134.3456
+	STRING = "STRING"
 	// Operators
 	ASSIGN   = "="
 	EQ       = "=="

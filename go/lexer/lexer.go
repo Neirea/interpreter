@@ -43,6 +43,15 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = newToken(token.ASSIGN, l.ch)
 		}
+	case '"':
+		str, isErr := l.readString()
+		if isErr {
+			tok = newToken(token.ILLEGAL, l.ch)
+		} else {
+			tok.Type = token.STRING
+			tok.Literal = str
+		}
+
 	case '+':
 		tok = newToken(token.PLUS, l.ch)
 	case '-':
@@ -141,6 +150,41 @@ func (l *Lexer) readNumber() string {
 		}
 	}
 	return l.input[position:l.position]
+}
+func (l *Lexer) readString() (string, bool) {
+	position := l.position + 1
+	for {
+		l.readChar()
+		if l.ch == '\\' {
+			switch l.peekChar() {
+			case 'n':
+				l.input = l.input[:l.position] + "\n" + l.input[l.position+2:]
+			case 't':
+				l.input = l.input[:l.position] + "\t" + l.input[l.position+2:]
+			case '\\':
+				l.input = l.input[:l.position] + "\\" + l.input[l.position+2:]
+			case 'r':
+				l.input = l.input[:l.position] + "\r" + l.input[l.position+2:]
+			case 'v':
+				l.input = l.input[:l.position] + "\r" + l.input[l.position+2:]
+			case '"':
+				l.input = l.input[:l.position] + "\r" + l.input[l.position+2:]
+			case 'a':
+				l.input = l.input[:l.position] + "\r" + l.input[l.position+2:]
+			case 'b':
+				l.input = l.input[:l.position] + "\r" + l.input[l.position+2:]
+			case 'f':
+				l.input = l.input[:l.position] + "\r" + l.input[l.position+2:]
+			}
+		}
+		if l.ch == 0 {
+			return "", true
+		}
+		if l.ch == '"' {
+			break
+		}
+	}
+	return l.input[position:l.position], false
 }
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
