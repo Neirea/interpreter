@@ -16,6 +16,7 @@ import {
     Program,
     ReturnStatement,
     Statement,
+    StringLiteral,
 } from "../ast";
 import {
     Bool,
@@ -27,6 +28,7 @@ import {
     Null,
     Obj,
     ReturnValue,
+    StringObj,
 } from "../object";
 import { Environment } from "../object/enviroment";
 
@@ -73,6 +75,8 @@ export function evalCode(node: INode, env: Environment): IObject | null {
             return new Float((node as FloatLiteral).value);
         case BooleanLiteral:
             return nativeBoolToBooleanObject((node as BooleanLiteral).value);
+        case StringLiteral:
+            return new StringObj((node as StringLiteral).value);
         case FunctionLiteral: {
             const params = (node as FunctionLiteral).parameters;
             const body = (node as FunctionLiteral).body;
@@ -296,9 +300,34 @@ function evalInfixExpression(operator: string, left: IObject, right: IObject) {
             `type mismatch: ${left.type()} ${operator} ${right.type()}`
         );
     }
+    if (left.type() === Obj.STRING && right.type() === Obj.STRING) {
+        return evalStringInfixExpression(operator, left, right);
+    }
     return newError(
         `unknown operator: ${left.type()} ${operator} ${right.type()}`
     );
+}
+
+function evalStringInfixExpression(
+    operator: string,
+    left: IObject,
+    right: IObject
+): IObject {
+    const leftVal = (left as StringObj).value;
+    const rightVal = (right as StringObj).value;
+
+    switch (operator) {
+        case "+":
+            return new StringObj(leftVal + rightVal);
+        case "==":
+            return new Bool(leftVal === rightVal);
+        case "!=":
+            return new Bool(leftVal !== rightVal);
+        default:
+            return newError(
+                `unknown operator: ${left.type()} ${operator} ${right.type()}`
+            );
+    }
 }
 
 function createNumber(left: IObject, right: IObject, result: number) {

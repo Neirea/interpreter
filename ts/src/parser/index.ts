@@ -15,6 +15,7 @@ import {
     Program,
     ReturnStatement,
     Statement,
+    StringLiteral,
 } from "../ast";
 import { Lexer } from "../lexer";
 import { Token, TokenType, token } from "../token";
@@ -71,6 +72,8 @@ export class Parser {
         this.registerPrefix(token.LPAREN, () => this.parseGroupedExpression());
         this.registerPrefix(token.IF, () => this.parseIfExpression());
         this.registerPrefix(token.FUNCTION, () => this.parseFunctionLiteral());
+        this.registerPrefix(token.STRING, () => this.parseStringLiteral());
+        this.registerPrefix(token.ILLEGAL, () => this.parseIllegal());
         //infix
         this.registerInfix(token.PLUS, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.MINUS, (l) => this.parseInfixExpression(l));
@@ -137,6 +140,10 @@ export class Parser {
 
     private parseBoolean() {
         return new BooleanLiteral(this.curToken, this.curTokenIs(token.TRUE));
+    }
+
+    private parseStringLiteral() {
+        return new StringLiteral(this.curToken, this.curToken.literal);
     }
 
     private parseIntegerLiteral(): Expression | undefined {
@@ -375,5 +382,10 @@ export class Parser {
             this.nextToken();
         }
         return block;
+    }
+
+    private parseIllegal(): Expression {
+        this.peekError('"');
+        return new StringLiteral(this.curToken, this.curToken.literal);
     }
 }

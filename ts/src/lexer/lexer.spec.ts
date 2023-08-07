@@ -21,6 +21,8 @@ test("test lexer", () => {
 
 		10 == 10;
 		10 != 9;
+        "foobar"
+        "foo bar"
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let" },
@@ -96,6 +98,8 @@ test("test lexer", () => {
         { type: token.NOT_EQ, literal: "!=" },
         { type: token.INT, literal: "9" },
         { type: token.SEMICOLON, literal: ";" },
+        { type: token.STRING, literal: "foobar" },
+        { type: token.STRING, literal: "foo bar" },
         { type: token.EOF, literal: "EOF" },
     ];
 

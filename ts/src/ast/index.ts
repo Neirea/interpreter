@@ -228,3 +228,15 @@ export class CallExpression implements Expression {
         return `${this.func.toString()}(${argStrings.join(", ")})`;
     }
 }
+
+export class StringLiteral implements Expression {
+    constructor(public token: Token, public value: string) {}
+
+    expressionNode() {}
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return this.token.literal;
+    }
+}

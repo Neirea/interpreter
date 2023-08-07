@@ -7,6 +7,7 @@ import {
     FunctionObj,
     IObject,
     Integer,
+    StringObj,
 } from "../object";
 import { Environment } from "../object/enviroment";
 import { Parser } from "../parser";
@@ -216,6 +217,10 @@ test("test error handling", () => {
             input: "foobar",
             expected: "identifier not found: foobar",
         },
+        {
+            input: `"Hello" - "World"`,
+            expected: "unknown operator: STRING - STRING",
+        },
     ];
 
     for (const test of tests) {
@@ -282,4 +287,20 @@ test("test closures", () => {
     `;
     const evaluated = testEval(input);
     testIntegerObject(evaluated, 4);
+});
+
+test("test string literals", () => {
+    const input = '"Hello World!"';
+    const evaluated = testEval(input);
+    expect(evaluated).toBeInstanceOf(StringObj);
+    const str = evaluated as StringObj;
+    expect(str.value).toEqual("Hello World!");
+});
+
+test("test string concatenation", () => {
+    const input = '"Hello" + " " + "World!"';
+    const evaluated = testEval(input);
+    expect(evaluated).toBeInstanceOf(StringObj);
+    const str = evaluated as StringObj;
+    expect(str.value).toEqual("Hello World!");
 });

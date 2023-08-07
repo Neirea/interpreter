@@ -5,6 +5,7 @@ export const Obj = {
     INTEGER: "INTEGER",
     FLOAT: "FLOAT",
     BOOLEAN: "BOOLEAN",
+    STRING: "STRING",
     FUNCTION: "FUNCTION",
     NULL: "NULL",
     RETURN_VALUE: "RETURN_VALUE",
@@ -97,5 +98,16 @@ export class FunctionObj implements IObject {
             params.push(p.toString());
         }
         return `fn(${params.join(", ")}) {\n${this.body.toString()}\n}`;
+    }
+}
+
+export class StringObj implements IObject {
+    constructor(public value: string) {}
+
+    type() {
+        return Obj.STRING;
+    }
+    inspect() {
+        return this.value;
     }
 }

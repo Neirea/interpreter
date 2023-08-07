@@ -13,6 +13,7 @@ import {
     LetStatement,
     PrefixExpression,
     ReturnStatement,
+    StringLiteral,
 } from "../ast";
 import { Lexer } from "../lexer";
 
@@ -433,6 +434,19 @@ test("test call expression parsing", () => {
     testLiteralExpression(exp.args[0], 1);
     testInfixExpression(exp.args[1], 2, "*", 3);
     testInfixExpression(exp.args[2], 4, "+", 5);
+});
+
+test("test string literal expression", () => {
+    const input = '"\thello world\n"';
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    const exp = stmt.expression as StringLiteral;
+    expect(exp).toBeInstanceOf(StringLiteral);
+    expect(exp.value).toEqual("\thello world\n");
 });
 
 function testInfixExpression(

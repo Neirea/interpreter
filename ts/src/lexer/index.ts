@@ -29,7 +29,16 @@ export class Lexer {
             case "-":
                 tok = newToken(token.MINUS, this.ch);
                 break;
-            case "!":
+            case '"': {
+                const [str, isErr] = this.readString();
+                if (isErr) {
+                    tok = newToken(token.ILLEGAL, this.ch);
+                } else {
+                    tok = newToken(token.STRING, str);
+                }
+                break;
+            }
+            case "!": {
                 if (this.peekChar() == "=") {
                     const ch = this.ch;
                     this.readChar();
@@ -39,6 +48,7 @@ export class Lexer {
                     tok = newToken(token.BANG, this.ch);
                 }
                 break;
+            }
             case "/":
                 tok = newToken(token.SLASH, this.ch);
                 break;
@@ -140,6 +150,53 @@ export class Lexer {
         ) {
             this.readChar();
         }
+    }
+
+    private readString(): [string, boolean] {
+        const position = this.position + 1;
+
+        while (true) {
+            this.readChar();
+            if (this.ch === "\\") {
+                const peekCh = this.peekChar();
+                switch (peekCh) {
+                    case "n":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "t":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "\\":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "r":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "v":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case '"':
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "a":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "b":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                    case "f":
+                        this.input = this.input.replace("\n", "\n");
+                        break;
+                }
+            }
+            if (this.ch === token.EOF) {
+                return ["", true];
+            }
+            if (this.ch === '"') {
+                break;
+            }
+        }
+        return [this.input.slice(position, this.position), false];
     }
 }
 
