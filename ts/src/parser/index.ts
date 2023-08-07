@@ -1,4 +1,5 @@
 import {
+    ArrayLiteral,
     BlockStatement,
     BooleanLiteral,
     CallExpression,
@@ -8,6 +9,7 @@ import {
     FunctionLiteral,
     Identifier,
     IfExpression,
+    IndexExpression,
     InfixExpression,
     IntegerLiteral,
     LetStatement,
@@ -28,6 +30,7 @@ const Precedence = {
     PRODUCT: 5,
     PREFIX: 6,
     CALL: 7,
+    INDEX: 8,
 };
 
 const precedences: { [key: TokenType]: number } = {
@@ -40,6 +43,7 @@ const precedences: { [key: TokenType]: number } = {
     [token.SLASH]: Precedence.PRODUCT,
     [token.ASTERISK]: Precedence.PRODUCT,
     [token.LPAREN]: Precedence.CALL,
+    [token.LBRACKET]: Precedence.INDEX,
 };
 
 type ParsePrefixFunction = () => Expression | undefined;
@@ -73,8 +77,10 @@ export class Parser {
         this.registerPrefix(token.IF, () => this.parseIfExpression());
         this.registerPrefix(token.FUNCTION, () => this.parseFunctionLiteral());
         this.registerPrefix(token.STRING, () => this.parseStringLiteral());
+        this.registerPrefix(token.LBRACKET, () => this.parseArrayLiteral());
         this.registerPrefix(token.ILLEGAL, () => this.parseIllegal());
         //infix
+        this.registerInfix(token.LBRACKET, (l) => this.parseIndexExpression(l));
         this.registerInfix(token.PLUS, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.MINUS, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.SLASH, (l) => this.parseInfixExpression(l));
@@ -146,6 +152,48 @@ export class Parser {
         return new StringLiteral(this.curToken, this.curToken.literal);
     }
 
+    private parseIndexExpression(
+        left: Expression | undefined
+    ): Expression | undefined {
+        const tkn = this.curToken;
+        this.nextToken();
+        const idx = this.parseExpression(Precedence.LOWEST);
+        if (!this.expectPeek(token.RBRACKET)) {
+            return;
+        }
+        if (left === undefined) return;
+        if (idx === undefined) return;
+        return new IndexExpression(tkn, left, idx);
+    }
+
+    private parseArrayLiteral(): Expression | undefined {
+        const tkn = this.curToken;
+        const elements = this.parseExpressionList(token.RBRACKET);
+        if (elements === undefined) return;
+        return new ArrayLiteral(tkn, elements);
+    }
+
+    private parseExpressionList(end: TokenType): Expression[] | undefined {
+        const list: Expression[] = [];
+        if (this.peekTokenIs(end)) {
+            this.nextToken();
+            return list;
+        }
+        this.nextToken();
+        const expression = this.parseExpression(Precedence.LOWEST);
+        if (expression === undefined) return;
+        list.push(expression);
+        while (this.peekTokenIs(token.COMMA)) {
+            this.nextToken();
+            this.nextToken();
+            const expression = this.parseExpression(Precedence.LOWEST);
+            if (expression === undefined) return;
+            list.push(expression);
+        }
+        if (!this.expectPeek(end)) return;
+        return list;
+    }
+
     private parseIntegerLiteral(): Expression | undefined {
         const value = +this.curToken.literal;
         if (isNaN(value)) {
@@ -191,7 +239,7 @@ export class Parser {
         const operator = this.curToken.literal;
         this.nextToken();
         const right = this.parseExpression(Precedence.PREFIX);
-        if (right == null) return;
+        if (right === undefined) return;
         return new PrefixExpression(tkn, operator, right);
     }
 
@@ -203,8 +251,8 @@ export class Parser {
         const precedence = this.curPrecedence();
         this.nextToken();
         const right = this.parseExpression(precedence);
-        if (right == null) return;
-        if (left == null) return;
+        if (right === undefined) return;
+        if (left === undefined) return;
         return new InfixExpression(tkn, left, operator, right);
     }
 
@@ -224,7 +272,7 @@ export class Parser {
         }
         this.nextToken();
         const condition = this.parseExpression(Precedence.LOWEST);
-        if (condition == null) return;
+        if (condition === undefined) return;
         if (!this.expectPeek(token.RPAREN)) {
             return;
         }
@@ -250,7 +298,7 @@ export class Parser {
             return;
         }
         const params = this.parseFunctionParameters();
-        if (params == null) return;
+        if (params === undefined) return;
         if (!this.expectPeek(token.LBRACE)) {
             return;
         }
@@ -283,33 +331,10 @@ export class Parser {
         func: Expression | undefined
     ): Expression | undefined {
         const tkn = this.curToken;
-        const args = this.parseCallArguments();
-        if (args == null) return;
-        if (func == null) return;
+        const args = this.parseExpressionList(token.RPAREN);
+        if (args === undefined) return;
+        if (func === undefined) return;
         return new CallExpression(tkn, func, args);
-    }
-
-    private parseCallArguments(): Expression[] | undefined {
-        const args: Expression[] = [];
-        if (this.peekTokenIs(token.RPAREN)) {
-            this.nextToken();
-            return args;
-        }
-        this.nextToken();
-        const expr = this.parseExpression(Precedence.LOWEST);
-        if (expr == null) return args;
-        args.push(expr);
-        while (this.peekTokenIs(token.COMMA)) {
-            this.nextToken();
-            this.nextToken();
-            const expr = this.parseExpression(Precedence.LOWEST);
-            if (expr == null) return;
-            args.push(expr);
-        }
-        if (!this.expectPeek(token.RPAREN)) {
-            return;
-        }
-        return args;
     }
 
     public parseProgram(): Program {
@@ -353,7 +378,7 @@ export class Parser {
         const tkn = this.curToken;
         this.nextToken();
         const returnValue = this.parseExpression(Precedence.LOWEST);
-        if (returnValue == null) return;
+        if (returnValue === undefined) return;
         const stmt = new ReturnStatement(tkn, returnValue);
         if (this.peekTokenIs(token.SEMICOLON)) {
             this.nextToken();
@@ -364,7 +389,7 @@ export class Parser {
     private parseExpressionStatement(): ExpressionStatement | undefined {
         const tkn = this.curToken;
         const expr = this.parseExpression(Precedence.LOWEST);
-        if (expr == null) return;
+        if (expr === undefined) return;
         if (this.peekTokenIs(token.SEMICOLON)) {
             this.nextToken();
         }

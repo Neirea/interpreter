@@ -1,5 +1,6 @@
 import { Parser } from ".";
 import {
+    ArrayLiteral,
     BooleanLiteral,
     CallExpression,
     Expression,
@@ -8,6 +9,7 @@ import {
     FunctionLiteral,
     Identifier,
     IfExpression,
+    IndexExpression,
     InfixExpression,
     IntegerLiteral,
     LetStatement,
@@ -329,6 +331,14 @@ test("test operator precedence parsing", () => {
             input: "add(a + b + c * d / f + g)",
             expected: "add((((a + b) + ((c * d) / f)) + g))",
         },
+        {
+            input: "a * [1, 2, 3, 4][b * c] * d",
+            expected: "((a * ([1, 2, 3, 4][(b * c)])) * d)",
+        },
+        {
+            input: "add(a * b[2], b[1], 2 * [1, 2][1])",
+            expected: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))",
+        },
     ];
 
     for (const test of tests) {
@@ -444,9 +454,39 @@ test("test string literal expression", () => {
     checkParserErrors(parser);
     const stmt = program.statements[0] as ExpressionStatement;
     expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(StringLiteral);
     const exp = stmt.expression as StringLiteral;
-    expect(exp).toBeInstanceOf(StringLiteral);
     expect(exp.value).toEqual("\thello world\n");
+});
+
+test("test parsing array literals", () => {
+    const input = "[1, 2 * 2, 3 + 3]";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(ArrayLiteral);
+    const array = stmt.expression as ArrayLiteral;
+    expect(array.elements.length).toEqual(3);
+    testIntegerLiteral(array.elements[0], 1);
+    testInfixExpression(array.elements[1], 2, "*", 2);
+    testInfixExpression(array.elements[2], 3, "+", 3);
+});
+
+test("test parsing index expressions", () => {
+    const input = "myArray[1 + 1]";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(IndexExpression);
+    const indexExp = stmt.expression as IndexExpression;
+    testIdentifier(indexExp.left, "myArray");
+    testInfixExpression(indexExp.index, 1, "+", 1);
 });
 
 function testInfixExpression(

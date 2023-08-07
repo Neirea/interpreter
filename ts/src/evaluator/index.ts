@@ -1,4 +1,5 @@
 import {
+    ArrayLiteral,
     BlockStatement,
     BooleanLiteral,
     CallExpression,
@@ -9,6 +10,7 @@ import {
     INode,
     Identifier,
     IfExpression,
+    IndexExpression,
     InfixExpression,
     IntegerLiteral,
     LetStatement,
@@ -19,6 +21,7 @@ import {
     StringLiteral,
 } from "../ast";
 import {
+    ArrayObj,
     Bool,
     Builtin,
     ErrorObj,
@@ -79,6 +82,27 @@ export function evalCode(node: INode, env: Environment): IObject | null {
             return nativeBoolToBooleanObject((node as BooleanLiteral).value);
         case StringLiteral:
             return new StringObj((node as StringLiteral).value);
+        case ArrayLiteral: {
+            const elements = evalExpressions(
+                (node as ArrayLiteral).elements,
+                env
+            );
+            if (elements.length === 1 && isError(elements[0])) {
+                return elements[0];
+            }
+            return new ArrayObj(elements);
+        }
+        case IndexExpression: {
+            const left = evalCode((node as IndexExpression).left, env);
+            if (isError(left)) {
+                return left;
+            }
+            const index = evalCode((node as IndexExpression).index, env);
+            if (isError(index)) {
+                return index;
+            }
+            return evalIndexExpression(left as IObject, index as IObject);
+        }
         case FunctionLiteral: {
             const params = (node as FunctionLiteral).parameters;
             const body = (node as FunctionLiteral).body;
@@ -164,6 +188,24 @@ function evalExpressions(exps: Expression[], env: Environment): IObject[] {
         result.push(evaluated as IObject);
     }
     return result;
+}
+
+function evalIndexExpression(left: IObject, index: IObject): IObject {
+    if (left.type() === Obj.ARRAY && index.type() === Obj.INTEGER) {
+        return evalArrayIndexExpression(left, index);
+    } else {
+        return newError(`index operator not supported: ${left.type()}`);
+    }
+}
+
+function evalArrayIndexExpression(array: IObject, index: IObject): IObject {
+    const arrayObject = array as ArrayObj;
+    const idx = (index as Integer).value;
+    const max = arrayObject.elements.length - 1;
+    if (idx < 0 || idx > max) {
+        return NULL;
+    }
+    return arrayObject.elements[idx];
 }
 
 function evalIfExpression(ie: IfExpression, env: Environment): IObject | null {

@@ -6,6 +6,7 @@ export const Obj = {
     FLOAT: "FLOAT",
     BOOLEAN: "BOOLEAN",
     STRING: "STRING",
+    ARRAY: "ARRAY",
     FUNCTION: "FUNCTION",
     BUILTIN: "BUILTIN",
     NULL: "NULL",
@@ -123,5 +124,20 @@ export class Builtin implements IObject {
     }
     inspect() {
         return "builtin function";
+    }
+}
+
+export class ArrayObj implements IObject {
+    constructor(public elements: IObject[]) {}
+
+    type() {
+        return Obj.ARRAY;
+    }
+    inspect() {
+        let out: string[] = [];
+        for (const el of this.elements) {
+            out.push(el.inspect());
+        }
+        return `[${out.join(", ")}]`;
     }
 }

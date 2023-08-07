@@ -23,6 +23,7 @@ test("test lexer", () => {
 		10 != 9;
         "foobar"
         "foo bar"
+        [1, 2];
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let" },
@@ -100,6 +101,12 @@ test("test lexer", () => {
         { type: token.SEMICOLON, literal: ";" },
         { type: token.STRING, literal: "foobar" },
         { type: token.STRING, literal: "foo bar" },
+        { type: token.LBRACKET, literal: "[" },
+        { type: token.INT, literal: "1" },
+        { type: token.COMMA, literal: "," },
+        { type: token.INT, literal: "2" },
+        { type: token.RBRACKET, literal: "]" },
+        { type: token.SEMICOLON, literal: ";" },
         { type: token.EOF, literal: "EOF" },
     ];
 

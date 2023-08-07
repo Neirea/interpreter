@@ -240,3 +240,31 @@ export class StringLiteral implements Expression {
         return this.token.literal;
     }
 }
+
+export class ArrayLiteral implements Expression {
+    constructor(public token: Token, public elements: Expression[]) {}
+
+    expressionNode() {}
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return `[${this.elements.join(", ")}]`;
+    }
+}
+
+export class IndexExpression implements Expression {
+    constructor(
+        public token: Token,
+        public left: Expression,
+        public index: Expression
+    ) {}
+
+    expressionNode() {}
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return `(${this.left.toString()}[${this.index.toString()}])`;
+    }
+}

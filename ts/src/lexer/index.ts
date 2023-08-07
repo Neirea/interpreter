@@ -79,6 +79,12 @@ export class Lexer {
             case "}":
                 tok = newToken(token.RBRACE, this.ch);
                 break;
+            case "[":
+                tok = newToken(token.LBRACKET, this.ch);
+                break;
+            case "]":
+                tok = newToken(token.RBRACKET, this.ch);
+                break;
             case "\0":
                 tok = newToken(token.EOF, "EOF");
                 break;
@@ -189,7 +195,7 @@ export class Lexer {
                         break;
                 }
             }
-            if (this.ch === token.EOF) {
+            if (this.ch === "\0") {
                 return ["", true];
             }
             if (this.ch === '"') {
