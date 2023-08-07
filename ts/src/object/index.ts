@@ -7,6 +7,7 @@ export const Obj = {
     BOOLEAN: "BOOLEAN",
     STRING: "STRING",
     FUNCTION: "FUNCTION",
+    BUILTIN: "BUILTIN",
     NULL: "NULL",
     RETURN_VALUE: "RETURN_VALUE",
     ERROR: "ERROR",
@@ -109,5 +110,18 @@ export class StringObj implements IObject {
     }
     inspect() {
         return this.value;
+    }
+}
+
+type BuiltinFunction = (...args: IObject[]) => IObject;
+
+export class Builtin implements IObject {
+    constructor(public fn: BuiltinFunction) {}
+
+    type() {
+        return Obj.BUILTIN;
+    }
+    inspect() {
+        return "builtin function";
     }
 }

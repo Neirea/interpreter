@@ -304,3 +304,29 @@ test("test string concatenation", () => {
     const str = evaluated as StringObj;
     expect(str.value).toEqual("Hello World!");
 });
+
+test("test builtin functions", () => {
+    const tests = [
+        { input: `len("")`, expected: 0 },
+        { input: `len("four")`, expected: 4 },
+        { input: `len("hello world")`, expected: 11 },
+        {
+            input: `len(1)`,
+            expected: "argument to `len` not supported, got INTEGER",
+        },
+        {
+            input: `len("one", "two")`,
+            expected: "wrong number of arguments. got=2, want=1",
+        },
+    ];
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        if (typeof test.expected === "number") {
+            testIntegerObject(evaluated, test.expected);
+        } else if (typeof test.expected === "string") {
+            expect(evaluated).toBeInstanceOf(ErrorObj);
+            const errObj = evaluated as ErrorObj;
+            expect(errObj.message).toEqual(test.expected);
+        }
+    }
+});

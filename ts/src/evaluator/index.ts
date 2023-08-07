@@ -20,6 +20,7 @@ import {
 } from "../ast";
 import {
     Bool,
+    Builtin,
     ErrorObj,
     Float,
     FunctionObj,
@@ -31,6 +32,7 @@ import {
     StringObj,
 } from "../object";
 import { Environment } from "../object/enviroment";
+import { builtins } from "./builtins";
 
 export const NULL = new Null();
 export const TRUE = new Bool(true);
@@ -180,10 +182,14 @@ function evalIfExpression(ie: IfExpression, env: Environment): IObject | null {
 
 function evalIdentifier(node: Identifier, env: Environment): IObject {
     const val = env.get(node.value);
-    if (val === undefined) {
-        return newError("identifier not found: " + node.value);
+    if (val !== undefined) {
+        return val;
     }
-    return val;
+    const builtin = builtins.get(node.value);
+    if (builtin !== undefined) {
+        return builtin;
+    }
+    return newError("identifier not found: " + node.value);
 }
 
 function nativeBoolToBooleanObject(input: boolean): IObject {
@@ -338,18 +344,24 @@ function createNumber(left: IObject, right: IObject, result: number) {
     }
 }
 
-function newError(format: string): ErrorObj {
+export function newError(format: string): ErrorObj {
     return new ErrorObj(format);
 }
 
 function applyFunction(fn: IObject, args: IObject[]): IObject | null {
-    if (fn.type() !== Obj.FUNCTION) {
-        return newError(`not a function: ${fn.type()}`);
+    switch (fn.type()) {
+        case Obj.FUNCTION: {
+            const func = fn as FunctionObj;
+            const extendedEnv = extendFunctionEnv(func, args);
+            const evaluated = evalCode(func.body, extendedEnv);
+            return unwrapReturnValue(evaluated);
+        }
+        case Obj.BUILTIN: {
+            return (fn as Builtin).fn(...args);
+        }
+        default:
+            return newError(`not a function: ${fn.type()}`);
     }
-    const func = fn as FunctionObj;
-    const extendedEnv = extendFunctionEnv(func, args);
-    const evaluated = evalCode(func.body, extendedEnv);
-    return unwrapReturnValue(evaluated);
 }
 
 function extendFunctionEnv(fn: FunctionObj, args: IObject[]): Environment {
