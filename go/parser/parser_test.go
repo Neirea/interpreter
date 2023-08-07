@@ -891,8 +891,8 @@ func TestParsingHashLiteralsBooleanKeys(t *testing.T) {
 	}
 }
 
-func TestParsingHashLiteralsIntegerKeys(t *testing.T) {
-	input := `{1: 1, 2: 2, 3: 3}`
+func TestParsingHashLiteralsNumberKeys(t *testing.T) {
+	input := `{1.2: 1, 2: 2, 3.99: 3}`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -906,9 +906,9 @@ func TestParsingHashLiteralsIntegerKeys(t *testing.T) {
 	}
 
 	expected := map[string]int64{
-		"1": 1,
-		"2": 2,
-		"3": 3,
+		"1.2":  1,
+		"2":    2,
+		"3.99": 3,
 	}
 
 	if len(hash.Pairs) != len(expected) {
