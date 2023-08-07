@@ -3,7 +3,7 @@
 Written in Go and Typescript.
 Based on Thorsten Ball's book "Writing An Interpreter In Go".
 
-## Added features:
+## Added features (to initial version):
 
 -   TODO: Execute code from files via CLI command
 -   TODO: Line number in error message
