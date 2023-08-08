@@ -102,3 +102,12 @@ builtins.set(
         return new ArrayObj(newElements);
     })
 );
+builtins.set(
+    "print",
+    new Builtin((...args: IObject[]): IObject => {
+        for (const arg of args) {
+            console.log(arg.inspect());
+        }
+        return NULL;
+    })
+);
