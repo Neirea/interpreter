@@ -365,6 +365,12 @@ function evalNumberInfixExpression(
         case ">": {
             return nativeBoolToBooleanObject(leftVal > rightVal);
         }
+        case "<=": {
+            return nativeBoolToBooleanObject(leftVal <= rightVal);
+        }
+        case ">=": {
+            return nativeBoolToBooleanObject(leftVal >= rightVal);
+        }
         case "==": {
             return nativeBoolToBooleanObject(leftVal === rightVal);
         }

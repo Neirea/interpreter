@@ -23,6 +23,8 @@ export const token = {
     SLASH: "/",
     LT: "<",
     GT: ">",
+    LTE: "<=",
+    GTE: ">=",
     // Delimiters
     COLON: ":",
     COMMA: ",",

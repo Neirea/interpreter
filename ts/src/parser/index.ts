@@ -39,6 +39,8 @@ const precedences: { [key: TokenType]: number } = {
     [token.NOT_EQ]: Precedence.EQUALS,
     [token.LT]: Precedence.LESSGREATER,
     [token.GT]: Precedence.LESSGREATER,
+    [token.LTE]: Precedence.LESSGREATER,
+    [token.GTE]: Precedence.LESSGREATER,
     [token.PLUS]: Precedence.SUM,
     [token.MINUS]: Precedence.SUM,
     [token.SLASH]: Precedence.PRODUCT,
@@ -89,6 +91,8 @@ export class Parser {
         this.registerInfix(token.ASTERISK, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.EQ, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.NOT_EQ, (l) => this.parseInfixExpression(l));
+        this.registerInfix(token.LTE, (l) => this.parseInfixExpression(l));
+        this.registerInfix(token.GTE, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.LT, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.GT, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.LPAREN, (l) => this.parseCallExpression(l));

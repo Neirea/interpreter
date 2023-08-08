@@ -14,7 +14,7 @@ export class Lexer {
 
         switch (this.ch) {
             case "=":
-                if (this.peekChar() == "=") {
+                if (this.peekChar() === "=") {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
@@ -39,7 +39,7 @@ export class Lexer {
                 break;
             }
             case "!": {
-                if (this.peekChar() == "=") {
+                if (this.peekChar() === "=") {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
@@ -55,12 +55,28 @@ export class Lexer {
             case "*":
                 tok = newToken(token.ASTERISK, this.ch);
                 break;
-            case "<":
-                tok = newToken(token.LT, this.ch);
+            case "<": {
+                if (this.peekChar() === "=") {
+                    const ch = this.ch;
+                    this.readChar();
+                    const literal = ch + this.ch;
+                    tok = newToken(token.LTE, literal);
+                } else {
+                    tok = newToken(token.LT, this.ch);
+                }
                 break;
-            case ">":
-                tok = newToken(token.GT, this.ch);
+            }
+            case ">": {
+                if (this.peekChar() === "=") {
+                    const ch = this.ch;
+                    this.readChar();
+                    const literal = ch + this.ch;
+                    tok = newToken(token.GTE, literal);
+                } else {
+                    tok = newToken(token.GT, this.ch);
+                }
                 break;
+            }
             case ":":
                 tok = newToken(token.COLON, this.ch);
                 break;
