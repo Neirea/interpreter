@@ -26,6 +26,8 @@ const (
 	SLASH    = "/"
 	LT       = "<"
 	GT       = ">"
+	GTE      = ">="
+	LTE      = "<="
 	// Delimiters
 	COLON     = ":"
 	COMMA     = ","
