@@ -13,6 +13,24 @@ import (
 )
 
 func main() {
+	fileFlag := flag.String("f", "", "File path")
+	flag.Parse()
+
+	if len(*fileFlag) > 0 {
+		if isValidFilePath(*fileFlag) {
+			HandleFileExecute(fileFlag)
+		} else {
+			fmt.Printf("File '%s' not found\n", *fileFlag)
+			os.Exit(1)
+		}
+		return
+	}
+	// Check for other flags or arguments
+	otherFlags := flag.Args()
+	if len(otherFlags) > 0 {
+		fmt.Println("Unexpected flags or arguments:", otherFlags)
+		os.Exit(1)
+	}
 	user, err := user.Current()
 	if err != nil {
 		panic(err)
@@ -20,21 +38,7 @@ func main() {
 	fmt.Printf("Hello %s! This is the Monkey programming language!\n",
 		user.Username)
 	fmt.Printf("Feel free to type in commands\n")
-
-	fileFlag := flag.String("f", "", "File path")
-	flag.Parse()
-
-	if len(os.Args) < 2 {
-		repl.Start(os.Stdin, os.Stdout)
-	} else {
-		switch os.Args[1] {
-		case "-f":
-			HandleFileExecute(fileFlag)
-		default:
-			fmt.Println("Expected a valid subcommand")
-			os.Exit(1)
-		}
-	}
+	repl.Start(os.Stdin, os.Stdout)
 }
 
 func HandleFileExecute(f *string) {
