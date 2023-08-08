@@ -7,6 +7,7 @@ import {
     ExpressionStatement,
     FloatLiteral,
     FunctionLiteral,
+    HashLiteral,
     INode,
     Identifier,
     IfExpression,
@@ -27,6 +28,9 @@ import {
     ErrorObj,
     Float,
     FunctionObj,
+    HashObj,
+    HashPair,
+    IHashable,
     IObject,
     Integer,
     Null,
@@ -41,7 +45,7 @@ export const NULL = new Null();
 export const TRUE = new Bool(true);
 export const FALSE = new Bool(false);
 
-export function evalCode(node: INode, env: Environment): IObject | null {
+export function evalCode(node: INode, env: Environment): IObject | undefined {
     switch (node.constructor) {
         // Statements
         case Program:
@@ -103,6 +107,9 @@ export function evalCode(node: INode, env: Environment): IObject | null {
             }
             return evalIndexExpression(left as IObject, index as IObject);
         }
+        case HashLiteral: {
+            return evalHashLiteral(node as HashLiteral, env);
+        }
         case FunctionLiteral: {
             const params = (node as FunctionLiteral).parameters;
             const body = (node as FunctionLiteral).body;
@@ -143,11 +150,14 @@ export function evalCode(node: INode, env: Environment): IObject | null {
             return new ReturnValue(retVal as IObject);
     }
 
-    return null;
+    return undefined;
 }
 
-function evalProgram(stmts: Statement[], env: Environment): IObject | null {
-    let result: IObject | null = null;
+function evalProgram(
+    stmts: Statement[],
+    env: Environment
+): IObject | undefined {
+    let result: IObject | undefined = undefined;
     for (const statement of stmts) {
         result = evalCode(statement, env);
 
@@ -164,8 +174,8 @@ function evalProgram(stmts: Statement[], env: Environment): IObject | null {
 function evalBlockStatement(
     block: BlockStatement,
     env: Environment
-): IObject | null {
-    let result: IObject | null = null;
+): IObject | undefined {
+    let result: IObject | undefined = undefined;
     for (const statement of block.statements) {
         result = evalCode(statement, env);
         if (result) {
@@ -193,6 +203,8 @@ function evalExpressions(exps: Expression[], env: Environment): IObject[] {
 function evalIndexExpression(left: IObject, index: IObject): IObject {
     if (left.type() === Obj.ARRAY && index.type() === Obj.INTEGER) {
         return evalArrayIndexExpression(left, index);
+    } else if (left.type() === Obj.HASH) {
+        return evalHashIndexExpression(left, index);
     } else {
         return newError(`index operator not supported: ${left.type()}`);
     }
@@ -208,7 +220,45 @@ function evalArrayIndexExpression(array: IObject, index: IObject): IObject {
     return arrayObject.elements[idx];
 }
 
-function evalIfExpression(ie: IfExpression, env: Environment): IObject | null {
+function evalHashIndexExpression(hash: IObject, index: IObject): IObject {
+    const hashObject = hash as HashObj;
+    const key = index as IObject & IHashable;
+    if (typeof key.hashKey !== "function") {
+        return newError(`unusable as hash key: ${index.type()}`);
+    }
+    const pair = hashObject.pairs.get(key.hashKey());
+    if (pair === undefined) return NULL;
+    return pair.value;
+}
+
+function evalHashLiteral(node: HashLiteral, env: Environment) {
+    const pairs = new Map<number, HashPair>();
+
+    for (const [keyNode, valueNode] of node.pairs) {
+        const key = evalCode(keyNode, env);
+        if (isError(key)) {
+            return key;
+        }
+        if (key === undefined) return;
+        const hashKey = key as IObject & IHashable;
+        if (typeof hashKey.hashKey !== "function") {
+            return newError(`unusable as hash key: ${key.type()}`);
+        }
+        const value = evalCode(valueNode, env);
+        if (isError(value)) {
+            return value;
+        }
+        if (value === undefined) return;
+        const hashed = hashKey.hashKey();
+        pairs.set(hashed, { key: key, value: value });
+    }
+    return new HashObj(pairs);
+}
+
+function evalIfExpression(
+    ie: IfExpression,
+    env: Environment
+): IObject | undefined {
     const condition = evalCode(ie.condition, env);
     if (isError(condition)) {
         return condition;
@@ -390,7 +440,7 @@ export function newError(format: string): ErrorObj {
     return new ErrorObj(format);
 }
 
-function applyFunction(fn: IObject, args: IObject[]): IObject | null {
+function applyFunction(fn: IObject, args: IObject[]): IObject | undefined {
     switch (fn.type()) {
         case Obj.FUNCTION: {
             const func = fn as FunctionObj;
@@ -415,15 +465,15 @@ function extendFunctionEnv(fn: FunctionObj, args: IObject[]): Environment {
     return env;
 }
 
-function unwrapReturnValue(obj: IObject | null): IObject | null {
+function unwrapReturnValue(obj: IObject | undefined): IObject | undefined {
     if (obj instanceof ReturnValue) {
         return obj.value;
     }
     return obj;
 }
 
-function isError(obj: IObject | null): boolean {
-    if (obj !== null) {
+function isError(obj: IObject | undefined): boolean {
+    if (obj !== undefined) {
         return obj.type() === Obj.ERROR;
     }
     return false;

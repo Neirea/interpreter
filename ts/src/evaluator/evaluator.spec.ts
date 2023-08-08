@@ -1,4 +1,4 @@
-import { NULL, evalCode } from ".";
+import { FALSE, NULL, TRUE, evalCode } from ".";
 import { Lexer } from "../lexer";
 import {
     ArrayObj,
@@ -6,6 +6,7 @@ import {
     ErrorObj,
     Float,
     FunctionObj,
+    HashObj,
     IObject,
     Integer,
     StringObj,
@@ -13,7 +14,7 @@ import {
 import { Environment } from "../object/enviroment";
 import { Parser } from "../parser";
 
-function testEval(input: string): IObject | null {
+function testEval(input: string): IObject | undefined {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -46,7 +47,7 @@ test("test evaluating integer expressions", () => {
     }
 });
 
-function testIntegerObject(obj: IObject | null, expected: number) {
+function testIntegerObject(obj: IObject | undefined, expected: number) {
     expect(obj).toBeInstanceOf(Integer);
     const integerObj = obj as Integer;
     expect(integerObj.value).toEqual(expected);
@@ -72,7 +73,7 @@ test("test evaluating float expressions", () => {
     }
 });
 
-function testFloatObject(obj: IObject | null, expected: number) {
+function testFloatObject(obj: IObject | undefined, expected: number) {
     expect(obj).toBeInstanceOf(Float);
     const floatObj = obj as Float;
     expect(floatObj.value).toEqual(expected);
@@ -107,7 +108,7 @@ test("test evaluating boolean expressions", () => {
     }
 });
 
-function testBooleanObject(obj: IObject | null, expected: boolean) {
+function testBooleanObject(obj: IObject | undefined, expected: boolean) {
     expect(obj).toBeInstanceOf(Bool);
     const bool = obj as Bool;
     expect(bool.value).toEqual(expected);
@@ -149,7 +150,7 @@ test("test if/else expressions", () => {
     }
 });
 
-function testNullObject(obj: IObject | null) {
+function testNullObject(obj: IObject | undefined) {
     expect(obj).toEqual(NULL);
 }
 
@@ -221,6 +222,10 @@ test("test error handling", () => {
         {
             input: `"Hello" - "World"`,
             expected: "unknown operator: STRING - STRING",
+        },
+        {
+            input: `{"name": "Monkey"}[fn(x) { x }];`,
+            expected: "unusable as hash key: FUNCTION",
         },
     ];
 
@@ -384,6 +389,83 @@ test("test array index expressions", () => {
     for (const test of tests) {
         const evaluated = testEval(test.input);
         if (test.expected !== null) {
+            testIntegerObject(evaluated, test.expected);
+        } else {
+            testNullObject(evaluated);
+        }
+    }
+});
+
+test("test hash literals", () => {
+    const input = `let two = "two";
+	{
+		"one": 10 - 9,
+		two: 1 + 1,
+		"thr" + "ee": 6 / 2,
+		4: 4,
+		true: 5,
+		false: 6
+	}`;
+
+    const evaluated = testEval(input);
+    expect(evaluated).toBeInstanceOf(HashObj);
+    const hash = evaluated as HashObj;
+
+    const expected = new Map([
+        [new StringObj("one").hashKey(), 1],
+        [new StringObj("two").hashKey(), 2],
+        [new StringObj("three").hashKey(), 3],
+        [new Integer(4).hashKey(), 4],
+        [TRUE.hashKey(), 5],
+        [FALSE.hashKey(), 6],
+    ]);
+
+    expect(hash.pairs.size).toEqual(expected.size);
+
+    for (const [expectedKey, expectedValue] of expected) {
+        const pair = hash.pairs.get(expectedKey);
+        expect(pair).toBeDefined();
+        if (pair !== undefined) {
+            testIntegerObject(pair.value, expectedValue);
+        }
+    }
+});
+
+test("test hash index expressions", () => {
+    const tests = [
+        {
+            input: `{"foo": 5}["foo"]`,
+            expected: 5,
+        },
+        {
+            input: `{"foo": 5}["bar"]`,
+            expected: undefined,
+        },
+        {
+            input: `let key = "foo"; {"foo": 5}[key]`,
+            expected: 5,
+        },
+        {
+            input: `{}["foo"]`,
+            expected: undefined,
+        },
+        {
+            input: `{5: 5}[5]`,
+            expected: 5,
+        },
+        {
+            input: `{true: 5}[true]`,
+            expected: 5,
+        },
+        {
+            input: `{false: 5}[false]`,
+            expected: 5,
+        },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        if (typeof test.expected === "number") {
             testIntegerObject(evaluated, test.expected);
         } else {
             testNullObject(evaluated);

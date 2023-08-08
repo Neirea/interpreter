@@ -24,6 +24,7 @@ test("test lexer", () => {
         "foobar"
         "foo bar"
         [1, 2];
+        {"foo": "bar"}
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let" },
@@ -107,6 +108,11 @@ test("test lexer", () => {
         { type: token.INT, literal: "2" },
         { type: token.RBRACKET, literal: "]" },
         { type: token.SEMICOLON, literal: ";" },
+        { type: token.LBRACE, literal: "{" },
+        { type: token.STRING, literal: "foo" },
+        { type: token.COLON, literal: ":" },
+        { type: token.STRING, literal: "bar" },
+        { type: token.RBRACE, literal: "}" },
         { type: token.EOF, literal: "EOF" },
     ];
 

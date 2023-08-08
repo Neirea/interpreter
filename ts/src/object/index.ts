@@ -1,5 +1,6 @@
 import { BlockStatement, Identifier } from "../ast";
 import { Environment } from "./enviroment";
+import * as crypto from "node:crypto";
 
 export const Obj = {
     INTEGER: "INTEGER",
@@ -7,6 +8,7 @@ export const Obj = {
     BOOLEAN: "BOOLEAN",
     STRING: "STRING",
     ARRAY: "ARRAY",
+    HASH: "HASH",
     FUNCTION: "FUNCTION",
     BUILTIN: "BUILTIN",
     NULL: "NULL",
@@ -20,7 +22,7 @@ export interface IObject {
     inspect: () => string;
 }
 
-export class Integer implements IObject {
+export class Integer implements IObject, IHashable {
     constructor(public value: number) {}
 
     type() {
@@ -29,9 +31,12 @@ export class Integer implements IObject {
     inspect() {
         return this.value.toString();
     }
+    hashKey() {
+        return this.value;
+    }
 }
 
-export class Float implements IObject {
+export class Float implements IObject, IHashable {
     constructor(public value: number) {}
 
     type() {
@@ -40,9 +45,12 @@ export class Float implements IObject {
     inspect() {
         return this.value.toString();
     }
+    hashKey() {
+        return this.value;
+    }
 }
 
-export class Bool implements IObject {
+export class Bool implements IObject, IHashable {
     constructor(public value: boolean) {}
 
     type() {
@@ -50,6 +58,9 @@ export class Bool implements IObject {
     }
     inspect() {
         return this.value.toString();
+    }
+    hashKey() {
+        return this.value ? 1 : 0;
     }
 }
 
@@ -103,7 +114,7 @@ export class FunctionObj implements IObject {
     }
 }
 
-export class StringObj implements IObject {
+export class StringObj implements IObject, IHashable {
     constructor(public value: string) {}
 
     type() {
@@ -111,6 +122,13 @@ export class StringObj implements IObject {
     }
     inspect() {
         return this.value;
+    }
+
+    hashKey() {
+        const hash = crypto.createHash("sha256");
+        hash.update(this.value);
+        const hashValue = hash.digest("hex");
+        return parseInt(hashValue, 16);
     }
 }
 
@@ -139,5 +157,32 @@ export class ArrayObj implements IObject {
             out.push(el.inspect());
         }
         return `[${out.join(", ")}]`;
+    }
+}
+
+export type HashPair = {
+    key: IObject;
+    value: IObject;
+};
+
+export interface IHashable {
+    hashKey(): number;
+}
+
+export class HashObj implements IObject {
+    constructor(public pairs: Map<number, HashPair>) {}
+
+    type() {
+        return Obj.HASH;
+    }
+
+    inspect() {
+        const pairs: string[] = [];
+        for (const [hashKey, hashPair] of this.pairs) {
+            pairs.push(
+                `${hashPair.key.inspect()}: ${hashPair.value.inspect()}`
+            );
+        }
+        return `{${pairs.join(", ")}}`;
     }
 }

@@ -28,7 +28,7 @@ rs.on("line", (input) => {
         return;
     }
     const evaluated = evalCode(program, env);
-    if (evaluated !== null) {
+    if (evaluated !== undefined) {
         console.log(evaluated.inspect());
     }
     rs.prompt();

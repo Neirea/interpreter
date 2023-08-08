@@ -7,6 +7,7 @@ import {
     ExpressionStatement,
     FloatLiteral,
     FunctionLiteral,
+    HashLiteral,
     Identifier,
     IfExpression,
     IndexExpression,
@@ -78,6 +79,7 @@ export class Parser {
         this.registerPrefix(token.FUNCTION, () => this.parseFunctionLiteral());
         this.registerPrefix(token.STRING, () => this.parseStringLiteral());
         this.registerPrefix(token.LBRACKET, () => this.parseArrayLiteral());
+        this.registerPrefix(token.LBRACE, () => this.parseHashLiteral());
         this.registerPrefix(token.ILLEGAL, () => this.parseIllegal());
         //infix
         this.registerInfix(token.LBRACKET, (l) => this.parseIndexExpression(l));
@@ -254,6 +256,32 @@ export class Parser {
         if (right === undefined) return;
         if (left === undefined) return;
         return new InfixExpression(tkn, left, operator, right);
+    }
+
+    private parseHashLiteral(): Expression | undefined {
+        const tkn = this.curToken;
+        const pairs = new Map<Expression, Expression>();
+        while (!this.peekTokenIs(token.RBRACE)) {
+            this.nextToken();
+            const key = this.parseExpression(Precedence.LOWEST);
+            if (!this.expectPeek(token.COLON) || key === undefined) {
+                return;
+            }
+            this.nextToken();
+            const value = this.parseExpression(Precedence.LOWEST);
+            if (value === undefined) return;
+            pairs.set(key, value);
+            if (
+                !this.peekTokenIs(token.RBRACE) &&
+                !this.expectPeek(token.COMMA)
+            ) {
+                return;
+            }
+        }
+        if (!this.expectPeek(token.RBRACE)) {
+            return;
+        }
+        return new HashLiteral(tkn, pairs);
     }
 
     private parseGroupedExpression(): Expression | undefined {

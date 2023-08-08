@@ -268,3 +268,22 @@ export class IndexExpression implements Expression {
         return `(${this.left.toString()}[${this.index.toString()}])`;
     }
 }
+
+export class HashLiteral implements Expression {
+    constructor(
+        public token: Token,
+        public pairs: Map<Expression, Expression>
+    ) {}
+
+    expressionNode() {}
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        const pairs: string[] = [];
+        for (const [key, value] of this.pairs) {
+            pairs.push(key.toString() + ":" + value.toString());
+        }
+        return `{${pairs.join(", ")}}`;
+    }
+}

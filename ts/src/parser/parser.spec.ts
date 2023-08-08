@@ -7,6 +7,7 @@ import {
     ExpressionStatement,
     FloatLiteral,
     FunctionLiteral,
+    HashLiteral,
     Identifier,
     IfExpression,
     IndexExpression,
@@ -487,6 +488,141 @@ test("test parsing index expressions", () => {
     const indexExp = stmt.expression as IndexExpression;
     testIdentifier(indexExp.left, "myArray");
     testInfixExpression(indexExp.index, 1, "+", 1);
+});
+
+test("test parsing empty hash literal", () => {
+    const input = "{}";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(HashLiteral);
+    const hash = stmt.expression as HashLiteral;
+    expect(hash.pairs.size).toEqual(0);
+});
+
+test("test parsing hash literals with string keys", () => {
+    const input = `{"one": 1, "two": 2, "three": 3}`;
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(HashLiteral);
+    const hash = stmt.expression as HashLiteral;
+    const expected = new Map([
+        ["one", 1],
+        ["two", 2],
+        ["three", 3],
+    ]);
+    expect(hash.pairs.size).toEqual(expected.size);
+    for (const [key, value] of hash.pairs) {
+        expect(key).toBeInstanceOf(StringLiteral);
+        const keyLiteral = key as StringLiteral;
+        const expectedValue = expected.get(keyLiteral.toString());
+        expect(expectedValue).toBeDefined();
+        if (expectedValue !== undefined) {
+            testIntegerLiteral(value, expectedValue);
+        }
+    }
+});
+
+test("test parsing hash literals with boolean keys", () => {
+    const input = `{true: 1, false: 2}`;
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(HashLiteral);
+    const hash = stmt.expression as HashLiteral;
+    const expected = new Map([
+        ["true", 1],
+        ["false", 2],
+    ]);
+    expect(hash.pairs.size).toEqual(expected.size);
+    for (const [key, value] of hash.pairs) {
+        expect(key).toBeInstanceOf(BooleanLiteral);
+        const keyLiteral = key as BooleanLiteral;
+        const expectedValue = expected.get(keyLiteral.toString());
+        expect(expectedValue).toBeDefined();
+        if (expectedValue !== undefined) {
+            testIntegerLiteral(value, expectedValue);
+        }
+    }
+});
+
+test("test parsing hash literals with number keys", () => {
+    const input = `{1.2: 1, 2: 2, 3.99:3}`;
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(HashLiteral);
+    const hash = stmt.expression as HashLiteral;
+    const expected = new Map([
+        ["1.2", 1],
+        ["2", 2],
+        ["3.99", 3],
+    ]);
+    expect(hash.pairs.size).toEqual(expected.size);
+    for (const [key, value] of hash.pairs) {
+        const keyLiteral = key as FloatLiteral;
+        expect(keyLiteral?.value).not.toBeNaN();
+        const expectedValue = expected.get(keyLiteral.toString());
+        expect(expectedValue).toBeDefined();
+        if (expectedValue !== undefined) {
+            testIntegerLiteral(value, expectedValue);
+        }
+    }
+});
+
+test("test parsing hash literals with expressions", () => {
+    const input = `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`;
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt).toBeInstanceOf(ExpressionStatement);
+    expect(stmt.expression).toBeInstanceOf(HashLiteral);
+    const hash = stmt.expression as HashLiteral;
+    const expected = new Map([
+        [
+            "one",
+            (e: Expression) => {
+                testInfixExpression(e, 0, "+", 1);
+            },
+        ],
+        [
+            "two",
+            (e: Expression) => {
+                testInfixExpression(e, 10, "-", 8);
+            },
+        ],
+        [
+            "three",
+            (e: Expression) => {
+                testInfixExpression(e, 15, "/", 5);
+            },
+        ],
+    ]);
+    expect(hash.pairs.size).toEqual(expected.size);
+    for (const [key, value] of hash.pairs) {
+        expect(key).toBeInstanceOf(StringLiteral);
+        const keyLiteral = key as StringLiteral;
+        const testFunc = expected.get(keyLiteral.toString());
+        expect(testFunc).toBeDefined();
+        if (testFunc !== undefined) {
+            testFunc(value);
+        }
+    }
 });
 
 function testInfixExpression(

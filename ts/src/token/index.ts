@@ -24,6 +24,7 @@ export const token = {
     LT: "<",
     GT: ">",
     // Delimiters
+    COLON: ":",
     COMMA: ",",
     SEMICOLON: ";",
     LPAREN: "(",
