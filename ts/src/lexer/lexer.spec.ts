@@ -12,6 +12,7 @@ test("test lexer", () => {
 		let result = add(five, ten);
 		!-/*5;
 		5 < 10 > 5;
+        5 <= 10 >= 5;
 
 		if (5 < 10.52) {
 			return true;
@@ -73,6 +74,12 @@ test("test lexer", () => {
         { type: token.LT, literal: "<" },
         { type: token.INT, literal: "10" },
         { type: token.GT, literal: ">" },
+        { type: token.INT, literal: "5" },
+        { type: token.SEMICOLON, literal: ";" },
+        { type: token.INT, literal: "5" },
+        { type: token.LTE, literal: "<=" },
+        { type: token.INT, literal: "10" },
+        { type: token.GTE, literal: ">=" },
         { type: token.INT, literal: "5" },
         { type: token.SEMICOLON, literal: ";" },
         { type: token.IF, literal: "if" },

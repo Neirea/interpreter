@@ -100,6 +100,12 @@ test("test evaluating boolean expressions", () => {
         { input: "(1 < 2) == false", expected: false },
         { input: "(1 > 2) == true", expected: false },
         { input: "(1 > 2) == false", expected: true },
+        { input: "(1 <= 1) == true", expected: true },
+        { input: "(1 <= 2) == true", expected: true },
+        { input: "(2 <= 1) == false", expected: true },
+        { input: "(1 >= 1) == true", expected: true },
+        { input: "(1 >= 2) == false", expected: true },
+        { input: "(2 >= 1) == true", expected: true },
     ];
 
     for (const test of tests) {

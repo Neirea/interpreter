@@ -189,6 +189,18 @@ test("test parsing infix expressions", () => {
             rightValue: 5,
         },
         {
+            input: "5 >= 5;",
+            leftValue: 5,
+            operator: ">=",
+            rightValue: 5,
+        },
+        {
+            input: "5 <= 5;",
+            leftValue: 5,
+            operator: "<=",
+            rightValue: 5,
+        },
+        {
             input: "5 == 5;",
             leftValue: 5,
             operator: "==",
