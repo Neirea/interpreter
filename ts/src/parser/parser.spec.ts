@@ -124,7 +124,7 @@ test("test parsing prefix epxressions", () => {
     const prefixTests = [
         { input: "!5;", operator: "!", value: 5 },
         {
-            input: "-15",
+            input: "-15;",
             operator: "-",
             value: 15,
         },
@@ -213,19 +213,19 @@ test("test parsing infix expressions", () => {
             rightValue: 5,
         },
         {
-            input: "true == true",
+            input: "true == true;",
             leftValue: true,
             operator: "==",
             rightValue: true,
         },
         {
-            input: "true != false",
+            input: "true != false;",
             leftValue: true,
             operator: "!=",
             rightValue: false,
         },
         {
-            input: "false == false",
+            input: "false == false;",
             leftValue: false,
             operator: "==",
             rightValue: false,
@@ -251,105 +251,105 @@ test("test parsing infix expressions", () => {
 
 test("test operator precedence parsing", () => {
     const tests = [
-        { input: "-a * b", expected: "((-a) * b)" },
+        { input: "-a * b;", expected: "((-a) * b)" },
         {
-            input: "!-a",
+            input: "!-a;",
             expected: "(!(-a))",
         },
         {
-            input: "a + b + c",
+            input: "a + b + c;",
             expected: "((a + b) + c)",
         },
         {
-            input: "a + b - c",
+            input: "a + b - c;",
             expected: "((a + b) - c)",
         },
         {
-            input: "a * b * c",
+            input: "a * b * c;",
             expected: "((a * b) * c)",
         },
         {
-            input: "a * b / c",
+            input: "a * b / c;",
             expected: "((a * b) / c)",
         },
         {
-            input: "a + b / c",
+            input: "a + b / c;",
             expected: "(a + (b / c))",
         },
         {
-            input: "a + b * c + d / e - f",
+            input: "a + b * c + d / e - f;",
             expected: "(((a + (b * c)) + (d / e)) - f)",
         },
         {
-            input: "3 + 4; -5 * 5",
+            input: "3 + 4; -5 * 5;",
             expected: "(3 + 4)((-5) * 5)",
         },
         {
-            input: "5 > 4 == 3 < 4",
+            input: "5 > 4 == 3 < 4;",
             expected: "((5 > 4) == (3 < 4))",
         },
         {
-            input: "5 < 4 != 3 > 4",
+            input: "5 < 4 != 3 > 4;",
             expected: "((5 < 4) != (3 > 4))",
         },
         {
-            input: "3 + 4 * 5 == 3 * 1 + 4 * 5",
+            input: "3 + 4 * 5 == 3 * 1 + 4 * 5;",
             expected: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
         },
         {
-            input: "true",
+            input: "true;",
             expected: "true",
         },
         {
-            input: "false",
+            input: "false;",
             expected: "false",
         },
         {
-            input: "3 > 5 == false",
+            input: "3 > 5 == false;",
             expected: "((3 > 5) == false)",
         },
         {
-            input: "3 < 5 == true",
+            input: "3 < 5 == true;",
             expected: "((3 < 5) == true)",
         },
         {
-            input: "1 + (2 + 3) + 4",
+            input: "1 + (2 + 3) + 4;",
             expected: "((1 + (2 + 3)) + 4)",
         },
         {
-            input: "(5 + 5) * 2",
+            input: "(5 + 5) * 2;",
             expected: "((5 + 5) * 2)",
         },
         {
-            input: "2 / (5 + 5)",
+            input: "2 / (5 + 5);",
             expected: "(2 / (5 + 5))",
         },
         {
-            input: "-(5 + 5)",
+            input: "-(5 + 5);",
             expected: "(-(5 + 5))",
         },
         {
-            input: "!(true == true)",
+            input: "!(true == true);",
             expected: "(!(true == true))",
         },
         {
-            input: "a + add(b * c) + d",
+            input: "a + add(b * c) + d;",
             expected: "((a + add((b * c))) + d)",
         },
         {
-            input: "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+            input: "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8));",
             expected: "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
         },
         {
-            input: "add(a + b + c * d / f + g)",
+            input: "add(a + b + c * d / f + g);",
             expected: "add((((a + b) + ((c * d) / f)) + g))",
         },
         {
-            input: "a * [1, 2, 3, 4][b * c] * d",
+            input: "a * [1, 2, 3, 4][b * c] * d;",
             expected: "((a * ([1, 2, 3, 4][(b * c)])) * d)",
         },
         {
-            input: "add(a * b[2], b[1], 2 * [1, 2][1])",
+            input: "add(a * b[2], b[1], 2 * [1, 2][1]);",
             expected: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))",
         },
     ];
@@ -365,7 +365,7 @@ test("test operator precedence parsing", () => {
 });
 
 test("test if expression", () => {
-    const input = "if (x < y) { x }";
+    const input = "if (x < y) { x; }";
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -383,7 +383,7 @@ test("test if expression", () => {
 });
 
 test("test if-else expression", () => {
-    const input = "if (x < y) { x } else { y }";
+    const input = "if (x < y) { x; } else { y; }";
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -460,7 +460,7 @@ test("test call expression parsing", () => {
 });
 
 test("test string literal expression", () => {
-    const input = '"\thello world\n"';
+    const input = '"\thello world\n";';
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -473,7 +473,7 @@ test("test string literal expression", () => {
 });
 
 test("test parsing array literals", () => {
-    const input = "[1, 2 * 2, 3 + 3]";
+    const input = "[1, 2 * 2, 3 + 3];";
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -489,7 +489,7 @@ test("test parsing array literals", () => {
 });
 
 test("test parsing index expressions", () => {
-    const input = "myArray[1 + 1]";
+    const input = "myArray[1 + 1];";
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -503,7 +503,7 @@ test("test parsing index expressions", () => {
 });
 
 test("test parsing empty hash literal", () => {
-    const input = "{}";
+    const input = "{};";
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -516,7 +516,7 @@ test("test parsing empty hash literal", () => {
 });
 
 test("test parsing hash literals with string keys", () => {
-    const input = `{"one": 1, "two": 2, "three": 3}`;
+    const input = `{"one": 1, "two": 2, "three": 3};`;
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -543,7 +543,7 @@ test("test parsing hash literals with string keys", () => {
 });
 
 test("test parsing hash literals with boolean keys", () => {
-    const input = `{true: 1, false: 2}`;
+    const input = `{true: 1, false: 2};`;
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -569,7 +569,7 @@ test("test parsing hash literals with boolean keys", () => {
 });
 
 test("test parsing hash literals with number keys", () => {
-    const input = `{1.2: 1, 2: 2, 3.99:3}`;
+    const input = `{1.2: 1, 2: 2, 3.99:3};`;
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -596,7 +596,7 @@ test("test parsing hash literals with number keys", () => {
 });
 
 test("test parsing hash literals with expressions", () => {
-    const input = `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`;
+    const input = `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5};`;
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();

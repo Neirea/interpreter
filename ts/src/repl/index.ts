@@ -35,6 +35,6 @@ export function replStart() {
 function printReplParserErrors(errors: ParseError[]) {
     console.error("parser errors:");
     for (const error of errors) {
-        console.error(`\t${error}`);
+        console.error(`\t${error.message}`);
     }
 }

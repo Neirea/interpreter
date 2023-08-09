@@ -402,8 +402,9 @@ export class Parser {
         this.nextToken();
         const value = this.parseExpression(Precedence.LOWEST);
         if (!value) return;
-        if (this.peekTokenIs(token.SEMICOLON)) {
-            this.nextToken();
+
+        if (this.checkSemicolonError()) {
+            return;
         }
         return new LetStatement(tkn, name, value);
     }
@@ -414,8 +415,8 @@ export class Parser {
         const returnValue = this.parseExpression(Precedence.LOWEST);
         if (returnValue === undefined) return;
         const stmt = new ReturnStatement(tkn, returnValue);
-        if (this.peekTokenIs(token.SEMICOLON)) {
-            this.nextToken();
+        if (this.checkSemicolonError()) {
+            return;
         }
         return stmt;
     }
@@ -424,10 +425,22 @@ export class Parser {
         const tkn = this.curToken;
         const expr = this.parseExpression(Precedence.LOWEST);
         if (expr === undefined) return;
-        if (this.peekTokenIs(token.SEMICOLON)) {
-            this.nextToken();
+
+        const exprStmt = new ExpressionStatement(tkn, expr);
+
+        switch (expr.tokenLiteral()) {
+            case "if":
+                this.skipSemicolon();
+                break;
+            case "fn":
+                this.skipSemicolon();
+                break;
+            default:
+                if (this.checkSemicolonError()) {
+                    return;
+                }
         }
-        return new ExpressionStatement(tkn, expr);
+        return exprStmt;
     }
 
     private parseBlockStatement(): BlockStatement {
@@ -446,5 +459,22 @@ export class Parser {
     private parseIllegal(): Expression {
         this.peekError('"');
         return new StringLiteral(this.curToken, this.curToken.literal);
+    }
+
+    private skipSemicolon() {
+        while (this.peekTokenIs(token.SEMICOLON)) {
+            this.nextToken();
+        }
+    }
+
+    private checkSemicolonError(): boolean {
+        if (this.peekTokenIs(token.SEMICOLON)) {
+            this.skipSemicolon();
+            return false;
+        } else {
+            this.peekError(";");
+            this.skipSemicolon();
+            return true;
+        }
     }
 }

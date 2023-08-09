@@ -240,7 +240,9 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{}
 	for !p.curTokenIs(token.EOF) {
 		stmt := p.parseStatement()
-		program.Statements = append(program.Statements, stmt)
+		if stmt != nil {
+			program.Statements = append(program.Statements, stmt)
+		}
 		p.nextToken()
 	}
 	return program
@@ -253,8 +255,13 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		return p.parseExpressionStatement()
+		stmt := p.parseExpressionStatement()
+		if stmt == nil {
+			return nil
+		}
+		return stmt
 	}
+
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
@@ -269,8 +276,8 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
+	if p.checkSemicolonError() {
+		return nil
 	}
 	return stmt
 }
@@ -280,26 +287,38 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	stmt.ReturnValue = p.parseExpression(LOWEST)
 
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
+	if p.checkSemicolonError() {
+		return nil
 	}
 	return stmt
 }
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
+
+	exprType := stmt.Expression.TokenLiteral()
+	switch exprType {
+	case "if":
+		p.skipSemicolon()
+	case "fn":
+		p.skipSemicolon()
+	default:
+		if p.checkSemicolonError() {
+			return nil
+		}
 	}
 	return stmt
 }
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := &ast.BlockStatement{Token: p.curToken}
 	block.Statements = []ast.Statement{}
+
 	p.nextToken()
 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
 		stmt := p.parseStatement()
-		block.Statements = append(block.Statements, stmt)
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
 		p.nextToken()
 	}
 	return block
@@ -401,6 +420,23 @@ func (p *Parser) parseFloatLiteral() ast.Expression {
 func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 	msg := fmt.Sprintf("no prefix parse function for %s found", t)
 	p.errors = append(p.errors, ParseError{Message: msg, Line: p.curToken.Line})
+}
+
+func (p *Parser) skipSemicolon() {
+	for p.peekTokenIs((token.SEMICOLON)) {
+		p.nextToken()
+	}
+}
+
+func (p *Parser) checkSemicolonError() bool {
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.skipSemicolon()
+		return false
+	} else {
+		p.peekError(";")
+		p.skipSemicolon()
+		return true
+	}
 }
 
 func (p *Parser) peekPrecedence() int {

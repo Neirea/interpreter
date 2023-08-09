@@ -1,12 +1,12 @@
-let dict = {"hello":"\tHello ","world":"\tWorld!"}
+let dict = {"hello":"\tHello ","world":"\tWorld!"};
 
-print(dict["hello"],dict["world"])
+print(dict["hello"],dict["world"]);
 
 let fib = fn(n){
     if(n <= 1) {
         return n;
     }
-    return fib(n - 1) + fib(n - 2)
-}
+    return fib(n - 1) + fib(n - 2);
+};
 
 return fib(10);
