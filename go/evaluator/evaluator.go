@@ -266,6 +266,16 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 	case NULL:
 		return TRUE
 	default:
+		switch num := right.(type) {
+		case *object.Integer:
+			if num.Value == 0 {
+				return TRUE
+			}
+		case *object.Float:
+			if num.Value == 0 {
+				return TRUE
+			}
+		}
 		return FALSE
 	}
 }

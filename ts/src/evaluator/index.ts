@@ -314,6 +314,10 @@ function evalBangOperatorExpression(right: IObject): IObject {
         case NULL:
             return TRUE;
         default:
+            if (right.type() === Obj.INTEGER || right.type() === Obj.FLOAT) {
+                const rightNumber = right as Integer;
+                if (rightNumber.value === 0) return TRUE;
+            }
             return FALSE;
     }
 }

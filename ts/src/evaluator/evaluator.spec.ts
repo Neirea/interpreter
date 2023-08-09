@@ -128,6 +128,8 @@ test("test bang(!) operator", () => {
         { input: "!!true;", expected: true },
         { input: "!!false;", expected: false },
         { input: "!!5;", expected: true },
+        { input: "!0;", expected: true },
+        { input: "!0.0;", expected: true },
     ];
 
     for (const test of tests) {
