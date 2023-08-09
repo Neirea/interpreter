@@ -4,6 +4,7 @@ export class Lexer {
     private position: number = 0;
     private readPosition: number = 0;
     private ch: string = "";
+    public lineNumber: number = 1;
     constructor(private input: string) {
         this.readChar();
     }
@@ -18,23 +19,23 @@ export class Lexer {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
-                    tok = newToken(token.EQ, literal);
+                    tok = newToken(token.EQ, literal, this.lineNumber);
                 } else {
-                    tok = newToken(token.ASSIGN, this.ch);
+                    tok = newToken(token.ASSIGN, this.ch, this.lineNumber);
                 }
                 break;
             case "+":
-                tok = newToken(token.PLUS, this.ch);
+                tok = newToken(token.PLUS, this.ch, this.lineNumber);
                 break;
             case "-":
-                tok = newToken(token.MINUS, this.ch);
+                tok = newToken(token.MINUS, this.ch, this.lineNumber);
                 break;
             case '"': {
                 const [str, isErr] = this.readString();
                 if (isErr) {
-                    tok = newToken(token.ILLEGAL, this.ch);
+                    tok = newToken(token.ILLEGAL, this.ch, this.lineNumber);
                 } else {
-                    tok = newToken(token.STRING, str);
+                    tok = newToken(token.STRING, str, this.lineNumber);
                 }
                 break;
             }
@@ -43,26 +44,26 @@ export class Lexer {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
-                    tok = newToken(token.NOT_EQ, literal);
+                    tok = newToken(token.NOT_EQ, literal, this.lineNumber);
                 } else {
-                    tok = newToken(token.BANG, this.ch);
+                    tok = newToken(token.BANG, this.ch, this.lineNumber);
                 }
                 break;
             }
             case "/":
-                tok = newToken(token.SLASH, this.ch);
+                tok = newToken(token.SLASH, this.ch, this.lineNumber);
                 break;
             case "*":
-                tok = newToken(token.ASTERISK, this.ch);
+                tok = newToken(token.ASTERISK, this.ch, this.lineNumber);
                 break;
             case "<": {
                 if (this.peekChar() === "=") {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
-                    tok = newToken(token.LTE, literal);
+                    tok = newToken(token.LTE, literal, this.lineNumber);
                 } else {
-                    tok = newToken(token.LT, this.ch);
+                    tok = newToken(token.LT, this.ch, this.lineNumber);
                 }
                 break;
             }
@@ -71,47 +72,47 @@ export class Lexer {
                     const ch = this.ch;
                     this.readChar();
                     const literal = ch + this.ch;
-                    tok = newToken(token.GTE, literal);
+                    tok = newToken(token.GTE, literal, this.lineNumber);
                 } else {
-                    tok = newToken(token.GT, this.ch);
+                    tok = newToken(token.GT, this.ch, this.lineNumber);
                 }
                 break;
             }
             case ":":
-                tok = newToken(token.COLON, this.ch);
+                tok = newToken(token.COLON, this.ch, this.lineNumber);
                 break;
             case ";":
-                tok = newToken(token.SEMICOLON, this.ch);
+                tok = newToken(token.SEMICOLON, this.ch, this.lineNumber);
                 break;
             case "(":
-                tok = newToken(token.LPAREN, this.ch);
+                tok = newToken(token.LPAREN, this.ch, this.lineNumber);
                 break;
             case ")":
-                tok = newToken(token.RPAREN, this.ch);
+                tok = newToken(token.RPAREN, this.ch, this.lineNumber);
                 break;
             case ",":
-                tok = newToken(token.COMMA, this.ch);
+                tok = newToken(token.COMMA, this.ch, this.lineNumber);
                 break;
             case "{":
-                tok = newToken(token.LBRACE, this.ch);
+                tok = newToken(token.LBRACE, this.ch, this.lineNumber);
                 break;
             case "}":
-                tok = newToken(token.RBRACE, this.ch);
+                tok = newToken(token.RBRACE, this.ch, this.lineNumber);
                 break;
             case "[":
-                tok = newToken(token.LBRACKET, this.ch);
+                tok = newToken(token.LBRACKET, this.ch, this.lineNumber);
                 break;
             case "]":
-                tok = newToken(token.RBRACKET, this.ch);
+                tok = newToken(token.RBRACKET, this.ch, this.lineNumber);
                 break;
             case "\0":
-                tok = newToken(token.EOF, "EOF");
+                tok = newToken(token.EOF, "EOF", this.lineNumber);
                 break;
             default:
                 if (isLetter(this.ch)) {
                     const literal = this.readIdentifier();
                     const type = lookupIdent(literal);
-                    tok = newToken(type, literal);
+                    tok = newToken(type, literal, this.lineNumber);
                     return tok;
                 } else if (isDigit(this.ch)) {
                     let type = token.INT;
@@ -119,10 +120,10 @@ export class Lexer {
                     if (literal.includes(".")) {
                         type = token.FLOAT;
                     }
-                    tok = newToken(type, literal);
+                    tok = newToken(type, literal, this.lineNumber);
                     return tok;
                 } else {
-                    tok = newToken(token.ILLEGAL, this.ch);
+                    tok = newToken(token.ILLEGAL, this.ch, this.lineNumber);
                 }
         }
         this.readChar();
@@ -173,6 +174,9 @@ export class Lexer {
             this.ch === "\n" ||
             this.ch === "\r"
         ) {
+            if (this.ch === "\n") {
+                this.lineNumber += 1;
+            }
             this.readChar();
         }
     }
@@ -189,28 +193,28 @@ export class Lexer {
                         this.input = this.input.replace("\n", "\n");
                         break;
                     case "t":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("\t", "\t");
                         break;
                     case "\\":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("\\", "\\");
                         break;
                     case "r":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("\r", "\r");
                         break;
                     case "v":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("\v", "\v");
                         break;
                     case '"':
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace('"', '"');
                         break;
                     case "a":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("a", "a");
                         break;
                     case "b":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("\b", "\b");
                         break;
                     case "f":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input = this.input.replace("\f", "\f");
                         break;
                 }
             }

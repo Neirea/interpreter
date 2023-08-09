@@ -35,11 +35,16 @@ var precedences = map[token.TokenType]int{
 	token.LBRACKET: INDEX,
 }
 
+type ParseError struct {
+	Message string
+	Line    int
+}
+
 type Parser struct {
 	l              *lexer.Lexer
 	curToken       token.Token
 	peekToken      token.Token
-	errors         []string
+	errors         []ParseError
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
 }
@@ -47,7 +52,7 @@ type Parser struct {
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		l:      l,
-		errors: []string{},
+		errors: []ParseError{},
 	}
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
@@ -217,13 +222,13 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	return exp
 }
 
-func (p *Parser) Errors() []string {
+func (p *Parser) Errors() []ParseError {
 	return p.errors
 }
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
 		t, p.peekToken.Type)
-	p.errors = append(p.errors, msg)
+	p.errors = append(p.errors, ParseError{Message: msg, Line: p.curToken.Line})
 }
 
 func (p *Parser) nextToken() {
@@ -376,7 +381,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
-		p.errors = append(p.errors, msg)
+		p.errors = append(p.errors, ParseError{Message: msg, Line: p.curToken.Line})
 		return nil
 	}
 	lit.Value = value
@@ -387,7 +392,7 @@ func (p *Parser) parseFloatLiteral() ast.Expression {
 	value, err := strconv.ParseFloat(p.curToken.Literal, 64)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
-		p.errors = append(p.errors, msg)
+		p.errors = append(p.errors, ParseError{Message: msg, Line: p.curToken.Line})
 		return nil
 	}
 	lit.Value = value
@@ -395,7 +400,7 @@ func (p *Parser) parseFloatLiteral() ast.Expression {
 }
 func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 	msg := fmt.Sprintf("no prefix parse function for %s found", t)
-	p.errors = append(p.errors, msg)
+	p.errors = append(p.errors, ParseError{Message: msg, Line: p.curToken.Line})
 }
 
 func (p *Parser) peekPrecedence() int {

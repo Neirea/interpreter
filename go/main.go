@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"lang/evaluator"
 	"lang/lexer"
 	"lang/object"
@@ -55,7 +56,7 @@ func HandleFileExecute(f *string) {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	if len(p.Errors()) != 0 {
-		repl.PrintParserErrors(os.Stdout, p.Errors())
+		printFileParserErrors(os.Stdout, p.Errors())
 		return
 	}
 	evaluated := evaluator.Eval(program, env)
@@ -67,4 +68,11 @@ func HandleFileExecute(f *string) {
 func isValidFilePath(filePath string) bool {
 	_, err := os.Stat(filePath)
 	return !os.IsNotExist(err)
+}
+
+func printFileParserErrors(out io.Writer, errors []parser.ParseError) {
+	io.WriteString(out, " parser errors:\n")
+	for _, err := range errors {
+		io.WriteString(out, "\tLine "+fmt.Sprint(err.Line)+": "+err.Message+"\n")
+	}
 }

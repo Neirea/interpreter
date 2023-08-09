@@ -1,8 +1,8 @@
 import os from "node:os";
-import { printParserErrors, replStart } from "./repl";
+import { replStart } from "./repl";
 import * as fs from "node:fs/promises";
 import { Lexer } from "./lexer";
-import { Parser } from "./parser";
+import { ParseError, Parser } from "./parser";
 import { evalCode } from "./evaluator";
 import { Environment } from "./object/enviroment";
 
@@ -18,7 +18,7 @@ import { Environment } from "./object/enviroment";
         const program = parser.parseProgram();
 
         if (parser.errors.length > 0) {
-            printParserErrors(parser.errors);
+            printFileParserErrors(parser.errors);
             return;
         }
         const evaluated = evalCode(program, env);
@@ -41,3 +41,10 @@ import { Environment } from "./object/enviroment";
     console.log("Feel free to type in commands");
     replStart();
 })();
+
+function printFileParserErrors(errors: ParseError[]) {
+    console.error("parser errors:");
+    for (const error of errors) {
+        console.error(`\tLine ${error.line}: ${error.message}`);
+    }
+}

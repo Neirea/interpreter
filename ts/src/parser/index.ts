@@ -53,20 +53,22 @@ type ParsePrefixFunction = () => Expression | undefined;
 type ParseInfixFunction = (
     left: Expression | undefined
 ) => Expression | undefined;
+export type ParseError = {
+    message: string;
+    line: number;
+};
 
 export class Parser {
     private curToken: Token;
     private peekToken: Token;
-    constructor(
-        private lexer: Lexer,
-        public errors: string[] = [],
-        private prefixParseFns: {
-            [key: TokenType]: ParsePrefixFunction | undefined;
-        } = {},
-        private infixParseFns: {
-            [key: TokenType]: ParseInfixFunction | undefined;
-        } = {}
-    ) {
+    public errors: ParseError[] = [];
+    private prefixParseFns: {
+        [key: TokenType]: ParsePrefixFunction | undefined;
+    } = {};
+    private infixParseFns: {
+        [key: TokenType]: ParseInfixFunction | undefined;
+    } = {};
+    constructor(private lexer: Lexer) {
         //need to wrap so it doesn't snapshot curToken,peekToken,etc..
         //prefix
         this.registerPrefix(token.TRUE, () => this.parseBoolean());
@@ -112,7 +114,7 @@ export class Parser {
     }
     private peekError(tokenType: TokenType) {
         const msg = `expected next token to be ${tokenType}, got ${this.peekToken.type} instead`;
-        this.errors.push(msg);
+        this.errors.push({ message: msg, line: this.lexer.lineNumber });
     }
     private expectPeek(tokenType: TokenType): boolean {
         if (this.peekTokenIs(tokenType)) {
@@ -143,7 +145,7 @@ export class Parser {
     }
     private noPrefixParseFnError(tokenType: TokenType) {
         const msg = `no prefix parse function for ${tokenType} found`;
-        this.errors.push(msg);
+        this.errors.push({ message: msg, line: this.lexer.lineNumber });
     }
 
     private parseIdentifier() {
@@ -204,7 +206,7 @@ export class Parser {
         const value = +this.curToken.literal;
         if (isNaN(value)) {
             const msg = `could not parse ${this.curToken.literal} as integer`;
-            this.errors.push(msg);
+            this.errors.push({ message: msg, line: this.lexer.lineNumber });
             return;
         }
         return new IntegerLiteral(this.curToken, value);
@@ -213,7 +215,7 @@ export class Parser {
         const value = +this.curToken.literal;
         if (isNaN(value)) {
             const msg = `could not parse ${this.curToken.literal} as integer`;
-            this.errors.push(msg);
+            this.errors.push({ message: msg, line: this.lexer.lineNumber });
             return;
         }
         return new FloatLiteral(this.curToken, value);

@@ -1,7 +1,11 @@
 export type TokenType = string;
 
 export class Token {
-    constructor(public type: TokenType, public literal: string) {}
+    constructor(
+        public type: TokenType,
+        public literal: string,
+        public line: number
+    ) {}
 }
 
 export const token = {
@@ -59,6 +63,10 @@ export function lookupIdent(ident: string): TokenType {
     return keywords[ident] || token.IDENT;
 }
 
-export function newToken(tokenType: TokenType, ch: string): Token {
-    return new Token(tokenType, ch);
+export function newToken(
+    tokenType: TokenType,
+    ch: string,
+    line: number
+): Token {
+    return new Token(tokenType, ch, line);
 }

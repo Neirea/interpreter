@@ -1,6 +1,6 @@
 import readline from "readline";
 import { Lexer } from "../lexer";
-import { Parser } from "../parser";
+import { ParseError, Parser } from "../parser";
 import { Environment } from "../object/enviroment";
 import { evalCode } from "../evaluator";
 
@@ -21,7 +21,7 @@ export function replStart() {
         const program = parser.parseProgram();
 
         if (parser.errors.length > 0) {
-            printParserErrors(parser.errors);
+            printReplParserErrors(parser.errors);
             return;
         }
         const evaluated = evalCode(program, env);
@@ -32,7 +32,7 @@ export function replStart() {
     });
 }
 
-export function printParserErrors(errors: string[]) {
+function printReplParserErrors(errors: ParseError[]) {
     console.error("parser errors:");
     for (const error of errors) {
         console.error(`\t${error}`);
