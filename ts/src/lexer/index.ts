@@ -190,31 +190,58 @@ export class Lexer {
                 const peekCh = this.peekChar();
                 switch (peekCh) {
                     case "n":
-                        this.input = this.input.replace("\n", "\n");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\n" +
+                            this.input.slice(this.position + 2);
                         break;
                     case "t":
-                        this.input = this.input.replace("\t", "\t");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\t" +
+                            this.input.slice(this.position + 2);
                         break;
                     case "\\":
-                        this.input = this.input.replace("\\", "\\");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\\" +
+                            this.input.slice(this.position + 2);
                         break;
                     case "r":
-                        this.input = this.input.replace("\r", "\r");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\r" +
+                            this.input.slice(this.position + 2);
                         break;
                     case "v":
-                        this.input = this.input.replace("\v", "\v");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\v" +
+                            this.input.slice(this.position + 2);
                         break;
                     case '"':
-                        this.input = this.input.replace('"', '"');
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            '"' +
+                            this.input.slice(this.position + 2);
                         break;
                     case "a":
-                        this.input = this.input.replace("a", "a");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "a" +
+                            this.input.slice(this.position + 2);
                         break;
                     case "b":
-                        this.input = this.input.replace("\b", "\b");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\b" +
+                            this.input.slice(this.position + 2);
                         break;
                     case "f":
-                        this.input = this.input.replace("\f", "\f");
+                        this.input =
+                            this.input.slice(0, this.position) +
+                            "\f" +
+                            this.input.slice(this.position + 2);
                         break;
                 }
             }

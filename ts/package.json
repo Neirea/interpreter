@@ -6,7 +6,7 @@
         "build": "tsc -p .",
         "start": "node ./build/src/index.js",
         "start:repl": "ts-node src/index.ts",
-        "start:file": "ts-node src/index.ts -f \"example.mlg\"",
+        "start:file": "ts-node src/index.ts -f \"../example.mlg\"",
         "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index\"",
         "test": "jest"
     },
