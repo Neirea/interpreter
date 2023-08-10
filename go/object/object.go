@@ -64,6 +64,7 @@ func (rv *ReturnValue) Inspect() string  { return rv.Value.Inspect() }
 
 type Error struct {
 	Message string
+	Line    int
 }
 
 func (e *Error) Type() ObjectType { return ERROR_OBJ }

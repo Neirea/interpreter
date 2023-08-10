@@ -42,12 +42,8 @@ func main() {
 	repl.Start(os.Stdin, os.Stdout)
 }
 
-func HandleFileExecute(f *string) {
-	if !isValidFilePath(*f) {
-		fmt.Println("Expected a valid file path")
-		return
-	}
-	data, err := os.ReadFile(*f)
+func HandleFileExecute(filePath *string) {
+	data, err := os.ReadFile(*filePath)
 	if err != nil {
 		return
 	}
@@ -61,13 +57,22 @@ func HandleFileExecute(f *string) {
 	}
 	evaluated := evaluator.Eval(program, env)
 	if evaluated != nil {
-		fmt.Println(evaluated.Inspect())
+		switch obj := evaluated.(type) {
+		case *object.Error:
+			printFileEvalError(obj)
+		default:
+			fmt.Println(evaluated.Inspect())
+		}
 	}
 }
 
 func isValidFilePath(filePath string) bool {
 	_, err := os.Stat(filePath)
 	return !os.IsNotExist(err)
+}
+
+func printFileEvalError(err *object.Error) {
+	fmt.Println("Error on line " + fmt.Sprintf("%v", err.Line) + ": " + err.Message)
 }
 
 func printFileParserErrors(out io.Writer, errors []parser.ParseError) {

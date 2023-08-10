@@ -24,7 +24,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.LetStatement:
 		val := Eval(node.Value, env)
 		if isError(val) {
-			return val
+			return setLineError(node, val)
 		}
 		env.Set(node.Name.Value, val)
 	// Expressions
@@ -33,11 +33,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
 		if isError(function) {
-			return function
+			return setLineError(node, function)
 		}
 		args := evalExpressions(node.Arguments, env)
 		if len(args) == 1 && isError(args[0]) {
-			return args[0]
+			return setLineError(node, args[0])
 		}
 		return applyFunction(function, args)
 	case *ast.IntegerLiteral:
@@ -51,7 +51,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.ArrayLiteral:
 		elements := evalExpressions(node.Elements, env)
 		if len(elements) == 1 && isError(elements[0]) {
-			return elements[0]
+			return setLineError(node, elements[0])
 		}
 		return &object.Array{Elements: elements}
 	case *ast.HashLiteral:
@@ -63,27 +63,27 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env)
 		if isError(left) {
-			return left
+			return setLineError(node, left)
 		}
 		index := Eval(node.Index, env)
 		if isError(index) {
-			return index
+			return setLineError(node, index)
 		}
 		return evalIndexExpression(left, index)
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) {
-			return right
+			return setLineError(node, right)
 		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
 		left := Eval(node.Left, env)
 		if isError(left) {
-			return left
+			return setLineError(node, left)
 		}
 		right := Eval(node.Right, env)
 		if isError(right) {
-			return right
+			return setLineError(node, right)
 		}
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.IfExpression:
@@ -91,7 +91,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue, env)
 		if isError(val) {
-			return val
+			return setLineError(node, val)
 		}
 		return &object.ReturnValue{Value: val}
 	}
@@ -183,7 +183,7 @@ func evalHashLiteral(
 	for keyNode, valueNode := range node.Pairs {
 		key := Eval(keyNode, env)
 		if isError(key) {
-			return key
+			return setLineError(node, key)
 		}
 		hashKey, ok := key.(object.Hashable)
 		if !ok {
@@ -191,7 +191,7 @@ func evalHashLiteral(
 		}
 		value := Eval(valueNode, env)
 		if isError(value) {
-			return value
+			return setLineError(node, value)
 		}
 		hashed := hashKey.HashKey()
 		pairs[hashed] = object.HashPair{Key: key, Value: value}
@@ -202,7 +202,7 @@ func evalHashLiteral(
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
 	if isError(condition) {
-		return condition
+		return setLineError(ie, condition)
 	}
 	if isTruthy(condition) {
 		return Eval(ie.Consequence, env)
@@ -454,4 +454,12 @@ func unwrapReturnValue(obj object.Object) object.Object {
 		return returnValue.Value
 	}
 	return obj
+}
+
+func setLineError(node ast.Node, obj object.Object) object.Object {
+	err, ok := obj.(*object.Error)
+	if ok {
+		err.Line = node.TokenLine()
+	}
+	return err
 }
