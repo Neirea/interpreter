@@ -57,7 +57,7 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
         case LetStatement: {
             const val = evalCode((node as LetStatement).value, env);
             if (isError(val)) {
-                return val;
+                return setLineError(node, val);
             }
             env.set((node as LetStatement).name.value, val as IObject);
             break;
@@ -69,11 +69,11 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
         case CallExpression: {
             const func = evalCode((node as CallExpression).func, env);
             if (isError(func)) {
-                return func;
+                return setLineError(node, func);
             }
             const args = evalExpressions((node as CallExpression).args, env);
             if (args.length === 1 && isError(args[0])) {
-                return args[0];
+                return setLineError(node, args[0]);
             }
             const res = applyFunction(func as IObject, args);
             return res;
@@ -92,7 +92,7 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
                 env
             );
             if (elements.length === 1 && isError(elements[0])) {
-                return elements[0];
+                return setLineError(node, elements[0]);
             }
             return new ArrayObj(elements);
         }
@@ -103,7 +103,7 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
             }
             const index = evalCode((node as IndexExpression).index, env);
             if (isError(index)) {
-                return index;
+                return setLineError(node, index);
             }
             return evalIndexExpression(left as IObject, index as IObject);
         }
@@ -118,7 +118,7 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
         case PrefixExpression: {
             const right = evalCode((node as PrefixExpression).right, env);
             if (isError(right)) {
-                return right;
+                return setLineError(node, right);
             }
             return evalPrefixExpression(
                 (node as PrefixExpression).operator,
@@ -128,11 +128,11 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
         case InfixExpression: {
             const left = evalCode((node as InfixExpression).left, env);
             if (isError(left)) {
-                return left;
+                return setLineError(node, left);
             }
             const right = evalCode((node as InfixExpression).right, env);
             if (isError(right)) {
-                return right;
+                return setLineError(node, right);
             }
             return evalInfixExpression(
                 (node as InfixExpression).operator,
@@ -145,7 +145,7 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
         case ReturnStatement:
             const retVal = evalCode((node as ReturnStatement).returnValue, env);
             if (isError(retVal)) {
-                return retVal;
+                return setLineError(node, retVal);
             }
             return new ReturnValue(retVal as IObject);
     }
@@ -237,7 +237,7 @@ function evalHashLiteral(node: HashLiteral, env: Environment) {
     for (const [keyNode, valueNode] of node.pairs) {
         const key = evalCode(keyNode, env);
         if (isError(key)) {
-            return key;
+            return setLineError(node, key);
         }
         if (key === undefined) return;
         const hashKey = key as IObject & IHashable;
@@ -246,7 +246,7 @@ function evalHashLiteral(node: HashLiteral, env: Environment) {
         }
         const value = evalCode(valueNode, env);
         if (isError(value)) {
-            return value;
+            return setLineError(node, value);
         }
         if (value === undefined) return;
         const hashed = hashKey.hashKey();
@@ -261,7 +261,7 @@ function evalIfExpression(
 ): IObject | undefined {
     const condition = evalCode(ie.condition, env);
     if (isError(condition)) {
-        return condition;
+        return setLineError(ie, condition);
     }
     if (isTruthy(condition as IObject)) {
         return evalCode(ie.consequence, env);
@@ -500,4 +500,16 @@ function isTruthy(obj: IObject): boolean {
         default:
             return true;
     }
+}
+
+function setLineError(
+    node: INode,
+    obj: IObject | undefined
+): IObject | undefined {
+    if (obj?.type() === Obj.ERROR) {
+        const err = obj as ErrorObj;
+        err.line = node.tokenLine();
+        return err;
+    }
+    return obj;
 }

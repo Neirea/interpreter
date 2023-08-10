@@ -85,7 +85,7 @@ export class ReturnValue implements IObject {
 }
 
 export class ErrorObj implements IObject {
-    constructor(public message: string) {}
+    constructor(public message: string, public line?: number) {}
 
     type() {
         return Obj.ERROR;

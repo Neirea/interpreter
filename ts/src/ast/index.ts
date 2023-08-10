@@ -1,6 +1,7 @@
 import { Token } from "../token";
 
 export interface INode {
+    tokenLine: () => number;
     tokenLiteral: () => string;
     toString: () => string;
 }
@@ -14,6 +15,9 @@ export interface Expression extends INode {
 export class Program implements INode {
     constructor(public statements: Statement[]) {}
 
+    tokenLine() {
+        return 1;
+    }
     tokenLiteral() {
         if (this.statements.length > 0) {
             return this.statements[0].tokenLiteral();
@@ -32,6 +36,9 @@ export class Program implements INode {
 
 export class Identifier implements Expression {
     constructor(public token: Token, public value: string) {}
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -47,7 +54,9 @@ export class LetStatement implements Statement {
         public name: Identifier,
         public value: Expression
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     statementNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -64,7 +73,9 @@ export class LetStatement implements Statement {
 
 export class ReturnStatement implements Statement {
     constructor(public token: Token, public returnValue: Expression) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     statementNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -81,7 +92,9 @@ export class ReturnStatement implements Statement {
 
 export class ExpressionStatement implements Statement {
     constructor(public token: Token, public expression: Expression) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     statementNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -94,7 +107,9 @@ export class ExpressionStatement implements Statement {
 
 export class BlockStatement implements Statement {
     constructor(public token: Token, public statements: Statement[]) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     statementNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -106,7 +121,9 @@ export class BlockStatement implements Statement {
 
 export class IntegerLiteral implements Expression {
     constructor(public token: Token, public value: number) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -117,7 +134,9 @@ export class IntegerLiteral implements Expression {
 }
 export class FloatLiteral implements Expression {
     constructor(public token: Token, public value: number) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -133,7 +152,9 @@ export class PrefixExpression implements Expression {
         public operator: string,
         public right: Expression
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -150,7 +171,9 @@ export class InfixExpression implements Expression {
         public operator: string,
         public right: Expression
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -164,7 +187,9 @@ export class InfixExpression implements Expression {
 
 export class BooleanLiteral implements Expression {
     constructor(public token: Token, public value: boolean) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -181,7 +206,9 @@ export class IfExpression implements Expression {
         public consequence: BlockStatement,
         public alternative?: BlockStatement
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -201,7 +228,9 @@ export class FunctionLiteral implements Expression {
         public parameters: Identifier[],
         public body: BlockStatement
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -218,7 +247,9 @@ export class CallExpression implements Expression {
         public func: Expression,
         public args: Expression[]
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -231,7 +262,9 @@ export class CallExpression implements Expression {
 
 export class StringLiteral implements Expression {
     constructor(public token: Token, public value: string) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -243,7 +276,9 @@ export class StringLiteral implements Expression {
 
 export class ArrayLiteral implements Expression {
     constructor(public token: Token, public elements: Expression[]) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -259,7 +294,9 @@ export class IndexExpression implements Expression {
         public left: Expression,
         public index: Expression
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
@@ -274,7 +311,9 @@ export class HashLiteral implements Expression {
         public token: Token,
         public pairs: Map<Expression, Expression>
     ) {}
-
+    tokenLine() {
+        return this.token.line;
+    }
     expressionNode() {}
     tokenLiteral() {
         return this.token.literal;
