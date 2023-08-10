@@ -7,13 +7,13 @@ Based on Thorsten Ball's book "Writing An Interpreter In Go".
 
 ### Golang:
 
--   cli loop: go run main.go
+-   run from cli: go run main.go
 -   run from file: go run main.go -f "file_name"
 
 ### Typescript:
 
--   cli loop: npm run start:repl
--   run example file: npx ts-node src/index.ts -f "file_name"
+-   run from cli: npm run start:repl
+-   run from file: npx ts-node src/index.ts -f "file_name"
 
 ## Addedional features:
 
