@@ -1,7 +1,7 @@
 # Monkey language interpreter
 
-Written and improved in Go and Typescript.
-Based on Thorsten Ball's book "Writing An Interpreter In Go".
+An implementation of a [Monkey](https://monkeylang.org) interpreter & compiler in Golang and Typescript.
+Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreterbook.com/).
 
 ## Usage
 
