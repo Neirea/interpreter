@@ -121,6 +121,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return setLineError(node, val)
 		}
 		return &object.ReturnValue{Value: val}
+	case *ast.ErrorLiteral:
+		return &object.Error{Message: node.Message, Line: node.TokenLine()}
 	}
 
 	return nil

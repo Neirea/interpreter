@@ -27,16 +27,12 @@ export function replStart() {
             return;
         }
         defineMacros(program, macroEnv);
-        try {
-            const expanded = expandMacros(program, macroEnv);
-            const evaluated = evalCode(expanded, env);
-            if (evaluated !== undefined) {
-                console.log(evaluated.inspect());
-            }
-            rs.prompt();
-        } catch (error) {
-            console.log(error);
+        const expanded = expandMacros(program, macroEnv);
+        const evaluated = evalCode(expanded, env);
+        if (evaluated !== undefined) {
+            console.log(evaluated.inspect());
         }
+        rs.prompt();
     });
 }
 

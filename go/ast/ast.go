@@ -352,3 +352,13 @@ func (ml *MacroLiteral) String() string {
 
 	return out.String()
 }
+
+type ErrorLiteral struct {
+	Line    int
+	Message string
+}
+
+func (el *ErrorLiteral) expressionNode()      {}
+func (el *ErrorLiteral) TokenLine() int       { return el.Line }
+func (el *ErrorLiteral) TokenLiteral() string { return "Error" }
+func (el *ErrorLiteral) String() string       { return el.Message }

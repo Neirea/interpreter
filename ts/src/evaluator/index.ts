@@ -3,6 +3,7 @@ import {
     BlockStatement,
     BooleanLiteral,
     CallExpression,
+    ErrorLiteral,
     Expression,
     ExpressionStatement,
     FloatLiteral,
@@ -173,15 +174,19 @@ export function evalCode(
         }
         case IfExpression:
             return evalIfExpression(node as IfExpression, env);
-        case ReturnStatement:
+        case ReturnStatement: {
             const retVal = evalCode((node as ReturnStatement).returnValue, env);
             if (isError(retVal)) {
                 return setLineError(node, retVal);
             }
             return new ReturnValue(retVal as IObject);
+        }
+        case ErrorLiteral:
+            return new ErrorObj(
+                (node as ErrorLiteral).message,
+                node.tokenLine()
+            );
     }
-
-    return undefined;
 }
 
 function evalProgram(

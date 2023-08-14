@@ -1,7 +1,6 @@
 package evaluator
 
 import (
-	"fmt"
 	"lang/ast"
 	"lang/object"
 )
@@ -68,9 +67,9 @@ func ExpandMacros(program ast.Node, env *object.Environment) ast.Node {
 		case *object.Quote:
 			return quote.Node
 		case *object.Error:
-			panic("Line " + fmt.Sprint(quote.Line) + ": " + quote.Message)
+			return &ast.ErrorLiteral{Line: quote.Line, Message: quote.Message}
 		default:
-			panic("we only support returning AST-nodes from macros")
+			return &ast.ErrorLiteral{Line: macro.Body.TokenLine(), Message: "we only support returning AST-nodes from macros"}
 		}
 	})
 }

@@ -1,6 +1,7 @@
 import { evalCode } from ".";
 import {
     CallExpression,
+    ErrorLiteral,
     INode,
     Identifier,
     LetStatement,
@@ -65,11 +66,12 @@ export function expandMacros(
             }
             case ErrorObj: {
                 const err = evaluated as ErrorObj;
-                throw new Error(`Line ${err.line}: ${err.message}`);
+                return new ErrorLiteral(err.message, err.line);
             }
             default:
-                throw new Error(
-                    "we only support returning AST-nodes from macros"
+                return new ErrorLiteral(
+                    "we only support returning AST-nodes from macros",
+                    macro.body.tokenLine()
                 );
         }
     });

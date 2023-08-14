@@ -348,3 +348,18 @@ export class MacroLiteral implements Expression {
         )}) ${this.body.toString()}`;
     }
 }
+
+export class ErrorLiteral implements Expression {
+    constructor(public message: string, public line: number = 0) {}
+
+    expressionNode() {}
+    tokenLine() {
+        return this.line;
+    }
+    tokenLiteral() {
+        return "Error";
+    }
+    toString() {
+        return this.message;
+    }
+}
