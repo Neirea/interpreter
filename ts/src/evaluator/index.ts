@@ -40,13 +40,17 @@ import {
 } from "../object";
 import { Environment } from "../object/enviroment";
 import { builtins } from "./builtins";
+import { quote } from "./quote_unquote";
 
 export const NULL = new Null();
 export const TRUE = new Bool(true);
 export const FALSE = new Bool(false);
 
-export function evalCode(node: INode, env: Environment): IObject | undefined {
-    switch (node.constructor) {
+export function evalCode(
+    node: INode | undefined,
+    env: Environment
+): IObject | undefined {
+    switch (node?.constructor) {
         // Statements
         case Program:
             return evalProgram((node as Program).statements, env);
@@ -71,11 +75,15 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
             return res;
         }
         case CallExpression: {
-            const func = evalCode((node as CallExpression).func, env);
+            const callExpr = node as CallExpression;
+            if (callExpr.func.tokenLiteral() === "quote") {
+                return quote(callExpr.args[0], env);
+            }
+            const func = evalCode(callExpr.func, env);
             if (isError(func)) {
                 return setLineError(node, func);
             }
-            const args = evalExpressions((node as CallExpression).args, env);
+            const args = evalExpressions(callExpr.args, env);
             if (args.length === 1 && isError(args[0])) {
                 return setLineError(node, args[0]);
             }

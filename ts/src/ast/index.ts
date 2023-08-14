@@ -326,3 +326,25 @@ export class HashLiteral implements Expression {
         return `{${pairs.join(", ")}}`;
     }
 }
+
+export class MacroLiteral implements Expression {
+    constructor(
+        public token: Token,
+        public parameters: Identifier[],
+        public body: BlockStatement
+    ) {}
+
+    expressionNode() {}
+    tokenLine() {
+        return this.token.line;
+    }
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        let params = this.parameters.map((param) => param.toString());
+        return `${this.tokenLiteral()}(${params.join(
+            ", "
+        )}) ${this.body.toString()}`;
+    }
+}

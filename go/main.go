@@ -48,6 +48,7 @@ func HandleFileExecute(filePath *string) {
 		return
 	}
 	env := object.NewEnvironment()
+	macroEnv := object.NewEnvironment()
 	l := lexer.New(string(data))
 	p := parser.New(l)
 	program := p.ParseProgram()
@@ -55,7 +56,9 @@ func HandleFileExecute(filePath *string) {
 		printFileParserErrors(os.Stdout, p.Errors())
 		return
 	}
-	evaluated := evaluator.Eval(program, env)
+	evaluator.DefineMacros(program, macroEnv)
+	expanded := evaluator.ExpandMacros(program, macroEnv)
+	evaluated := evaluator.Eval(expanded, env)
 	if evaluated != nil {
 		switch obj := evaluated.(type) {
 		case *object.Error:

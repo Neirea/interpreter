@@ -26,6 +26,7 @@ test("test lexer", () => {
         "foo bar"
         [1, 2];
         {"foo": "bar"}
+        macro(x, y) { x + y; };
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let", line: 1 },
@@ -120,7 +121,20 @@ test("test lexer", () => {
         { type: token.COLON, literal: ":", line: 24 },
         { type: token.STRING, literal: "bar", line: 24 },
         { type: token.RBRACE, literal: "}", line: 24 },
-        { type: token.EOF, literal: "EOF", line: 25 },
+        { type: token.MACRO, literal: "macro", line: 25 },
+        { type: token.LPAREN, literal: "(", line: 25 },
+        { type: token.IDENT, literal: "x", line: 25 },
+        { type: token.COMMA, literal: ",", line: 25 },
+        { type: token.IDENT, literal: "y", line: 25 },
+        { type: token.RPAREN, literal: ")", line: 25 },
+        { type: token.LBRACE, literal: "{", line: 25 },
+        { type: token.IDENT, literal: "x", line: 25 },
+        { type: token.PLUS, literal: "+", line: 25 },
+        { type: token.IDENT, literal: "y", line: 25 },
+        { type: token.SEMICOLON, literal: ";", line: 25 },
+        { type: token.RBRACE, literal: "}", line: 25 },
+        { type: token.SEMICOLON, literal: ";", line: 25 },
+        { type: token.EOF, literal: "EOF", line: 26 },
     ];
 
     const lexer = new Lexer(input);

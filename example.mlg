@@ -9,4 +9,16 @@ let fib = fn(n){
     return fib(n - 1) + fib(n - 2);
 };
 
-return fib(10);
+print(fib(10));
+
+let unless = macro(condition, consequence, alternative){ 
+    quote(if (!(unquote(condition))) { 
+        unquote(consequence); 
+    }
+    else { 
+        unquote(alternative);
+        }
+    ); 
+};
+
+unless(fib(7)>10.2, print("not greater"), print("greater"));

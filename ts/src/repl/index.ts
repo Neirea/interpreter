@@ -3,6 +3,7 @@ import { Lexer } from "../lexer";
 import { ParseError, Parser } from "../parser";
 import { Environment } from "../object/enviroment";
 import { evalCode } from "../evaluator";
+import { defineMacros, expandMacros } from "../evaluator/macro_expansion";
 
 export function replStart() {
     const rs = readline.createInterface({
@@ -12,6 +13,7 @@ export function replStart() {
     });
 
     const env = Environment.new();
+    const macroEnv = Environment.new();
 
     rs.prompt();
 
@@ -24,11 +26,17 @@ export function replStart() {
             printReplParserErrors(parser.errors);
             return;
         }
-        const evaluated = evalCode(program, env);
-        if (evaluated !== undefined) {
-            console.log(evaluated.inspect());
+        defineMacros(program, macroEnv);
+        try {
+            const expanded = expandMacros(program, macroEnv);
+            const evaluated = evalCode(expanded, env);
+            if (evaluated !== undefined) {
+                console.log(evaluated.inspect());
+            }
+            rs.prompt();
+        } catch (error) {
+            console.log(error);
         }
-        rs.prompt();
     });
 }
 

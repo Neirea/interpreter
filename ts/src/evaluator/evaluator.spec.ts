@@ -14,7 +14,7 @@ import {
 import { Environment } from "../object/enviroment";
 import { Parser } from "../parser";
 
-function testEval(input: string): IObject | undefined {
+export function testEval(input: string): IObject | undefined {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();

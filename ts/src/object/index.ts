@@ -1,4 +1,4 @@
-import { BlockStatement, Identifier } from "../ast";
+import { BlockStatement, INode, Identifier } from "../ast";
 import { Environment } from "./enviroment";
 import * as crypto from "node:crypto";
 
@@ -13,6 +13,8 @@ export const Obj = {
     BUILTIN: "BUILTIN",
     NULL: "NULL",
     RETURN_VALUE: "RETURN_VALUE",
+    QUOTE: "QUOTE",
+    MACRO: "MACRO",
     ERROR: "ERROR",
 };
 type ObjectType = string;
@@ -106,10 +108,7 @@ export class FunctionObj implements IObject {
         return Obj.FUNCTION;
     }
     inspect() {
-        let params = [];
-        for (const p of this.parameters) {
-            params.push(p.toString());
-        }
+        let params = this.parameters.map((p) => p.toString());
         return `fn(${params.join(", ")}) {\n${this.body.toString()}\n}`;
     }
 }
@@ -152,10 +151,7 @@ export class ArrayObj implements IObject {
         return Obj.ARRAY;
     }
     inspect() {
-        let out: string[] = [];
-        for (const el of this.elements) {
-            out.push(el.inspect());
-        }
+        const out = this.elements.map((p) => p.inspect());
         return `[${out.join(", ")}]`;
     }
 }
@@ -184,5 +180,32 @@ export class HashObj implements IObject {
             );
         }
         return `{${pairs.join(", ")}}`;
+    }
+}
+
+export class Quote implements IObject {
+    constructor(public node: INode) {}
+
+    type() {
+        return Obj.QUOTE;
+    }
+    inspect() {
+        return `QUOTE(${this.node.toString()})`;
+    }
+}
+
+export class Macro implements IObject {
+    constructor(
+        public parameters: Identifier[],
+        public body: BlockStatement,
+        public env: Environment
+    ) {}
+
+    type() {
+        return Obj.MACRO;
+    }
+    inspect() {
+        const params = this.parameters.map((p) => p.toString());
+        return `macro(${params.join(", ")}) {\n${this.body.toString()}\n}`;
     }
 }

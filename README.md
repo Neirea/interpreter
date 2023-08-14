@@ -13,6 +13,7 @@ Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 -   Closures
 -   Recursion
 -   Built-in functions
+-   Macros
 
 ## Additional features
 

@@ -14,6 +14,7 @@ import {
     InfixExpression,
     IntegerLiteral,
     LetStatement,
+    MacroLiteral,
     PrefixExpression,
     ReturnStatement,
     StringLiteral,
@@ -635,6 +636,26 @@ test("test parsing hash literals with expressions", () => {
             testFunc(value);
         }
     }
+});
+
+test("test macro literal parsing", () => {
+    const input = "macro(x, y) { x + y; };";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program.statements.length).toEqual(1);
+    expect(program.statements[0]).toBeInstanceOf(ExpressionStatement);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt.expression).toBeInstanceOf(MacroLiteral);
+    const macro = stmt.expression as MacroLiteral;
+    expect(macro.parameters.length).toEqual(2);
+    testLiteralExpression(macro.parameters[0], "x");
+    testLiteralExpression(macro.parameters[1], "y");
+    expect(macro.body.statements.length).toEqual(1);
+    expect(macro.body.statements[0]).toBeInstanceOf(ExpressionStatement);
+    const macroBody = macro.body.statements[0] as ExpressionStatement;
+    testInfixExpression(macroBody.expression, "x", "+", "y");
 });
 
 function testInfixExpression(

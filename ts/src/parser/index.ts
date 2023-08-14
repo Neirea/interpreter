@@ -14,6 +14,7 @@ import {
     InfixExpression,
     IntegerLiteral,
     LetStatement,
+    MacroLiteral,
     PrefixExpression,
     Program,
     ReturnStatement,
@@ -85,6 +86,7 @@ export class Parser {
         this.registerPrefix(token.LBRACKET, () => this.parseArrayLiteral());
         this.registerPrefix(token.LBRACE, () => this.parseHashLiteral());
         this.registerPrefix(token.ILLEGAL, () => this.parseIllegal());
+        this.registerPrefix(token.MACRO, () => this.parseMacroLiteral());
         //infix
         this.registerInfix(token.LBRACKET, (l) => this.parseIndexExpression(l));
         this.registerInfix(token.PLUS, (l) => this.parseInfixExpression(l));
@@ -465,6 +467,23 @@ export class Parser {
         while (this.peekTokenIs(token.SEMICOLON)) {
             this.nextToken();
         }
+    }
+
+    private parseMacroLiteral(): Expression | undefined {
+        const tkn = this.curToken;
+
+        if (!this.expectPeek(token.LPAREN)) {
+            return;
+        }
+        const params = this.parseFunctionParameters();
+
+        if (!params) return;
+
+        if (!this.expectPeek(token.LBRACE)) {
+            return;
+        }
+        const body = this.parseBlockStatement();
+        return new MacroLiteral(tkn, params, body);
     }
 
     private checkSemicolonError(): boolean {

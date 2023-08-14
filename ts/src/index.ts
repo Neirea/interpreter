@@ -6,6 +6,7 @@ import { ErrorObj, Null } from "./object";
 import { Environment } from "./object/enviroment";
 import { ParseError, Parser } from "./parser";
 import { replStart } from "./repl";
+import { defineMacros, expandMacros } from "./evaluator/macro_expansion";
 
 (async () => {
     const fileFlagIndex = process.argv.indexOf("-f");
@@ -34,6 +35,7 @@ async function handleFileExecute(filePath: string) {
         const input = await fs.readFile(filePath, "utf-8");
 
         const env = Environment.new();
+        const macroEnv = Environment.new();
         const lexer = new Lexer(input);
         const parser = new Parser(lexer);
         const program = parser.parseProgram();
@@ -42,7 +44,9 @@ async function handleFileExecute(filePath: string) {
             printFileParserErrors(parser.errors);
             return;
         }
-        const evaluated = evalCode(program, env);
+        defineMacros(program, macroEnv);
+        const expanded = expandMacros(program, macroEnv);
+        const evaluated = evalCode(expanded, env);
 
         if (!evaluated) return;
         switch (evaluated.constructor) {
