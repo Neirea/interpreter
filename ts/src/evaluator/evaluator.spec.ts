@@ -480,3 +480,19 @@ test("test hash index expressions", () => {
         }
     }
 });
+
+test("test while statements", () => {
+    const tests = [
+        { input: "let x = 0; while(x < 5) { let x = x + 1; } x;", expected: 5 },
+        { input: "let x = 0; while(x < 3) { let x = x + 1; } x;", expected: 3 },
+        {
+            input: "let x = 10; while(x) { let x = x - 1; } x;",
+            expected: 0,
+        },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});

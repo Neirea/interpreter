@@ -27,6 +27,7 @@ test("test lexer", () => {
         [1, 2];
         {"foo": "bar"}
         macro(x, y) { x + y; };
+        while(true) { x + y; }
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let", line: 1 },
@@ -134,7 +135,17 @@ test("test lexer", () => {
         { type: token.SEMICOLON, literal: ";", line: 25 },
         { type: token.RBRACE, literal: "}", line: 25 },
         { type: token.SEMICOLON, literal: ";", line: 25 },
-        { type: token.EOF, literal: "EOF", line: 26 },
+        { type: token.WHILE, literal: "while", line: 26 },
+        { type: token.LPAREN, literal: "(", line: 26 },
+        { type: token.TRUE, literal: "true", line: 26 },
+        { type: token.RPAREN, literal: ")", line: 26 },
+        { type: token.LBRACE, literal: "{", line: 26 },
+        { type: token.IDENT, literal: "x", line: 26 },
+        { type: token.PLUS, literal: "+", line: 26 },
+        { type: token.IDENT, literal: "y", line: 26 },
+        { type: token.SEMICOLON, literal: ";", line: 26 },
+        { type: token.RBRACE, literal: "}", line: 26 },
+        { type: token.EOF, literal: "EOF", line: 27 },
     ];
 
     const lexer = new Lexer(input);

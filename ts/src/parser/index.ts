@@ -20,6 +20,7 @@ import {
     ReturnStatement,
     Statement,
     StringLiteral,
+    WhileStatement,
 } from "../ast";
 import { Lexer } from "../lexer";
 import { Token, TokenType, token } from "../token";
@@ -328,6 +329,19 @@ export class Parser {
         return expression;
     }
 
+    private parseWhileStatement(): Statement | undefined {
+        const tkn = this.curToken;
+        if (!this.expectPeek(token.LPAREN)) return;
+        this.nextToken();
+        const condition = this.parseExpression(Precedence.LOWEST);
+        if (condition === undefined) return;
+        if (!this.expectPeek(token.RPAREN)) return;
+        if (!this.expectPeek(token.LBRACE)) return;
+        const body = this.parseBlockStatement();
+        this.skipSemicolon();
+        return new WhileStatement(tkn, condition, body);
+    }
+
     private parseFunctionLiteral(): Expression | undefined {
         const tkn = this.curToken;
         if (!this.expectPeek(token.LPAREN)) {
@@ -391,6 +405,8 @@ export class Parser {
                 return this.parseLetStatement();
             case token.RETURN:
                 return this.parseReturnStatement();
+            case token.WHILE:
+                return this.parseWhileStatement();
             default:
                 return this.parseExpressionStatement();
         }

@@ -18,6 +18,7 @@ import {
     PrefixExpression,
     ReturnStatement,
     StringLiteral,
+    WhileStatement,
 } from "../ast";
 import { Lexer } from "../lexer";
 
@@ -656,6 +657,22 @@ test("test macro literal parsing", () => {
     expect(macro.body.statements[0]).toBeInstanceOf(ExpressionStatement);
     const macroBody = macro.body.statements[0] as ExpressionStatement;
     testInfixExpression(macroBody.expression, "x", "+", "y");
+});
+
+test("test while statement", () => {
+    const input = "while (x < y) { x; }";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program.statements.length).toEqual(1);
+    expect(program.statements[0]).toBeInstanceOf(WhileStatement);
+    const stmt = program.statements[0] as WhileStatement;
+    testInfixExpression(stmt.condition, "x", "<", "y");
+    expect(stmt.body.statements.length).toEqual(1);
+    expect(stmt.body.statements[0]).toBeInstanceOf(ExpressionStatement);
+    const body = stmt.body.statements[0] as ExpressionStatement;
+    testIdentifier(body.expression, "x");
 });
 
 function testInfixExpression(

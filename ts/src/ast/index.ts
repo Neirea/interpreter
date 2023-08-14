@@ -363,3 +363,22 @@ export class ErrorLiteral implements Expression {
         return this.message;
     }
 }
+
+export class WhileStatement implements Statement {
+    constructor(
+        public token: Token,
+        public condition: Expression,
+        public body: BlockStatement
+    ) {}
+
+    statementNode() {}
+    tokenLine() {
+        return this.token.line;
+    }
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return `while${this.condition.toString()} ${this.body.toString()}`;
+    }
+}

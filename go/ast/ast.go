@@ -362,3 +362,21 @@ func (el *ErrorLiteral) expressionNode()      {}
 func (el *ErrorLiteral) TokenLine() int       { return el.Line }
 func (el *ErrorLiteral) TokenLiteral() string { return "Error" }
 func (el *ErrorLiteral) String() string       { return el.Message }
+
+type WhileStatement struct {
+	Token     token.Token // The 'if' token
+	Condition Expression
+	Body      *BlockStatement
+}
+
+func (we *WhileStatement) statementNode()       {}
+func (we *WhileStatement) TokenLine() int       { return we.Token.Line }
+func (we *WhileStatement) TokenLiteral() string { return we.Token.Literal }
+func (we *WhileStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("while")
+	out.WriteString(we.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(we.Body.String())
+	return out.String()
+}

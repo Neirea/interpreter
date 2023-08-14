@@ -557,3 +557,19 @@ func TestHashIndexExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestWhileStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 0; while(x < 5) { let x = x + 1; } x;", 5},
+		{"let x = 0; while(x < 3) { let x = x + 1; } x;", 3},
+		{"let x = 10; while(x) { let x = x - 1; } x;", 0},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}

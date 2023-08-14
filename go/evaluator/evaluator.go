@@ -121,6 +121,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return setLineError(node, val)
 		}
 		return &object.ReturnValue{Value: val}
+	case *ast.WhileStatement:
+		return evalWhileStatement(node, env)
 	case *ast.ErrorLiteral:
 		return &object.Error{Message: node.Message, Line: node.TokenLine()}
 	}
@@ -242,6 +244,19 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	}
 }
 
+func evalWhileStatement(we *ast.WhileStatement, env *object.Environment) object.Object {
+	originalCondition := we.Condition
+	condition := Eval(we.Condition, env)
+	if isError(condition) {
+		return setLineError(we, condition)
+	}
+	for isTruthy(condition) {
+		evalBlockStatement(we.Body, env)
+		condition = Eval(originalCondition, env)
+	}
+	return NULL
+}
+
 func evalIdentifier(
 	node *ast.Identifier,
 	env *object.Environment,
@@ -264,6 +279,16 @@ func isTruthy(obj object.Object) bool {
 	case FALSE:
 		return false
 	default:
+		switch num := obj.(type) {
+		case *object.Integer:
+			if num.Value == 0 {
+				return false
+			}
+		case *object.Float:
+			if num.Value == 0 {
+				return false
+			}
+		}
 		return true
 	}
 }

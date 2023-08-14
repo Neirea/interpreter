@@ -162,6 +162,23 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 	return expression
 }
+func (p *Parser) parseWhileStatement() ast.Statement {
+	statement := &ast.WhileStatement{Token: p.curToken}
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+	p.nextToken()
+	statement.Condition = p.parseExpression(LOWEST)
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+	statement.Body = p.parseBlockStatement()
+	p.skipSemicolon()
+	return statement
+}
 func (p *Parser) parseArrayLiteral() ast.Expression {
 	array := &ast.ArrayLiteral{Token: p.curToken}
 	array.Elements = p.parseExpressionList(token.RBRACKET)
@@ -255,6 +272,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.WHILE:
+		return p.parseWhileStatement()
 	default:
 		stmt := p.parseExpressionStatement()
 		if stmt == nil {

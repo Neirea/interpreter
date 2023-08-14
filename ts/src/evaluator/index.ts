@@ -21,6 +21,7 @@ import {
     ReturnStatement,
     Statement,
     StringLiteral,
+    WhileStatement,
 } from "../ast";
 import {
     ArrayObj,
@@ -181,6 +182,9 @@ export function evalCode(
             }
             return new ReturnValue(retVal as IObject);
         }
+        case WhileStatement: {
+            return evalWhileStatement(node as WhileStatement, env);
+        }
         case ErrorLiteral:
             return new ErrorObj(
                 (node as ErrorLiteral).message,
@@ -307,6 +311,18 @@ function evalIfExpression(
         return evalCode(ie.alternative, env);
     } else {
         return NULL;
+    }
+}
+
+function evalWhileStatement(we: WhileStatement, env: Environment) {
+    const originalCondition = we.condition;
+    let condition = evalCode(we.condition, env);
+    if (isError(condition)) {
+        return setLineError(we, condition);
+    }
+    while (isTruthy(condition as IObject)) {
+        evalBlockStatement(we.body, env);
+        condition = evalCode(originalCondition, env);
     }
 }
 
@@ -535,6 +551,9 @@ function isTruthy(obj: IObject): boolean {
         case FALSE:
             return false;
         default:
+            if (obj.constructor === Integer || obj.constructor === Float) {
+                if ((obj as Integer).value === 0) return false;
+            }
             return true;
     }
 }
