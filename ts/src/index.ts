@@ -1,11 +1,11 @@
-import os from "node:os";
-import { replStart } from "./repl";
 import * as fs from "node:fs/promises";
-import { Lexer } from "./lexer";
-import { ParseError, Parser } from "./parser";
+import os from "node:os";
 import { evalCode } from "./evaluator";
+import { Lexer } from "./lexer";
+import { ErrorObj, Null } from "./object";
 import { Environment } from "./object/enviroment";
-import { ErrorObj, Obj } from "./object";
+import { ParseError, Parser } from "./parser";
+import { replStart } from "./repl";
 
 (async () => {
     const fileFlagIndex = process.argv.indexOf("-f");
@@ -44,10 +44,15 @@ async function handleFileExecute(filePath: string) {
         }
         const evaluated = evalCode(program, env);
 
-        if (evaluated?.type() === Obj.ERROR) {
-            printFileEvalError(evaluated as ErrorObj);
-        } else if (evaluated !== undefined) {
-            console.log(evaluated.inspect());
+        if (!evaluated) return;
+        switch (evaluated.constructor) {
+            case ErrorObj:
+                printFileEvalError(evaluated as ErrorObj);
+                break;
+            case Null:
+                break;
+            default:
+                console.log(evaluated.inspect());
         }
     } catch (error) {
         console.error(error);

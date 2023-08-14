@@ -60,6 +60,8 @@ func HandleFileExecute(filePath *string) {
 		switch obj := evaluated.(type) {
 		case *object.Error:
 			printFileEvalError(obj)
+		case *object.Null:
+			break
 		default:
 			fmt.Println(evaluated.Inspect())
 		}

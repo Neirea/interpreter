@@ -29,7 +29,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		env.Set(node.Name.Value, val)
 	// Expressions
 	case *ast.Identifier:
-		return evalIdentifier(node, env)
+		res := evalIdentifier(node, env)
+		if isError(res) {
+			return setLineError(node, res)
+		}
+		return res
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
 		if isError(function) {
@@ -39,7 +43,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if len(args) == 1 && isError(args[0]) {
 			return setLineError(node, args[0])
 		}
-		return applyFunction(function, args)
+		res := applyFunction(function, args)
+		if isError(res) {
+			return setLineError(node, res)
+		}
+		return res
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 	case *ast.FloatLiteral:
@@ -55,7 +63,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return &object.Array{Elements: elements}
 	case *ast.HashLiteral:
-		return evalHashLiteral(node, env)
+		res := evalHashLiteral(node, env)
+		if isError(res) {
+			return setLineError(node, res)
+		}
+		return res
 	case *ast.FunctionLiteral:
 		params := node.Parameters
 		body := node.Body
@@ -69,13 +81,21 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(index) {
 			return setLineError(node, index)
 		}
-		return evalIndexExpression(left, index)
+		res := evalIndexExpression(left, index)
+		if isError(res) {
+			return setLineError(node, res)
+		}
+		return res
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) {
 			return setLineError(node, right)
 		}
-		return evalPrefixExpression(node.Operator, right)
+		res := evalPrefixExpression(node.Operator, right)
+		if isError(res) {
+			return setLineError(node, res)
+		}
+		return res
 	case *ast.InfixExpression:
 		left := Eval(node.Left, env)
 		if isError(left) {
@@ -85,7 +105,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(right) {
 			return setLineError(node, right)
 		}
-		return evalInfixExpression(node.Operator, left, right)
+		res := evalInfixExpression(node.Operator, left, right)
+		if isError(res) {
+			return setLineError(node, res)
+		}
+		return res
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 	case *ast.ReturnStatement:
@@ -149,7 +173,7 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	case left.Type() == object.HASH_OBJ:
 		return evalHashIndexExpression(left, index)
 	default:
-		return newError("index operator not supported: %s", left.Type())
+		return newError("index operator not supported: %s for %s", index.Type(), left.Type())
 	}
 }
 func evalArrayIndexExpression(array, index object.Object) object.Object {

@@ -64,7 +64,11 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
         }
         // Expressions
         case Identifier: {
-            return evalIdentifier(node as Identifier, env);
+            const res = evalIdentifier(node as Identifier, env);
+            if (isError(res)) {
+                return setLineError(node, res);
+            }
+            return res;
         }
         case CallExpression: {
             const func = evalCode((node as CallExpression).func, env);
@@ -76,6 +80,9 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
                 return setLineError(node, args[0]);
             }
             const res = applyFunction(func as IObject, args);
+            if (isError(res)) {
+                return setLineError(node, res);
+            }
             return res;
         }
         case IntegerLiteral:
@@ -105,10 +112,18 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
             if (isError(index)) {
                 return setLineError(node, index);
             }
-            return evalIndexExpression(left as IObject, index as IObject);
+            const res = evalIndexExpression(left as IObject, index as IObject);
+            if (isError(res)) {
+                return setLineError(node, res);
+            }
+            return res;
         }
         case HashLiteral: {
-            return evalHashLiteral(node as HashLiteral, env);
+            const res = evalHashLiteral(node as HashLiteral, env);
+            if (isError(res)) {
+                return setLineError(node, res);
+            }
+            return res;
         }
         case FunctionLiteral: {
             const params = (node as FunctionLiteral).parameters;
@@ -120,10 +135,14 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
             if (isError(right)) {
                 return setLineError(node, right);
             }
-            return evalPrefixExpression(
+            const res = evalPrefixExpression(
                 (node as PrefixExpression).operator,
                 right as IObject
             );
+            if (isError(res)) {
+                return setLineError(node, res);
+            }
+            return res;
         }
         case InfixExpression: {
             const left = evalCode((node as InfixExpression).left, env);
@@ -134,11 +153,15 @@ export function evalCode(node: INode, env: Environment): IObject | undefined {
             if (isError(right)) {
                 return setLineError(node, right);
             }
-            return evalInfixExpression(
+            const res = evalInfixExpression(
                 (node as InfixExpression).operator,
                 left as IObject,
                 right as IObject
             );
+            if (isError(res)) {
+                return setLineError(node, res);
+            }
+            return res;
         }
         case IfExpression:
             return evalIfExpression(node as IfExpression, env);
@@ -206,7 +229,9 @@ function evalIndexExpression(left: IObject, index: IObject): IObject {
     } else if (left.type() === Obj.HASH) {
         return evalHashIndexExpression(left, index);
     } else {
-        return newError(`index operator not supported: ${left.type()}`);
+        return newError(
+            `index operator not supported:${index.type()} for ${left.type()}`
+        );
     }
 }
 
@@ -314,9 +339,8 @@ function evalBangOperatorExpression(right: IObject): IObject {
         case NULL:
             return TRUE;
         default:
-            if (right.type() === Obj.INTEGER || right.type() === Obj.FLOAT) {
-                const rightNumber = right as Integer;
-                if (rightNumber.value === 0) return TRUE;
+            if (right.constructor === Integer || right.constructor === Float) {
+                if ((right as Integer).value === 0) return TRUE;
             }
             return FALSE;
     }
@@ -451,14 +475,14 @@ export function newError(format: string): ErrorObj {
 }
 
 function applyFunction(fn: IObject, args: IObject[]): IObject | undefined {
-    switch (fn.type()) {
-        case Obj.FUNCTION: {
+    switch (fn.constructor) {
+        case FunctionObj: {
             const func = fn as FunctionObj;
             const extendedEnv = extendFunctionEnv(func, args);
             const evaluated = evalCode(func.body, extendedEnv);
             return unwrapReturnValue(evaluated);
         }
-        case Obj.BUILTIN: {
+        case Builtin: {
             return (fn as Builtin).fn(...args);
         }
         default:
@@ -506,7 +530,7 @@ function setLineError(
     node: INode,
     obj: IObject | undefined
 ): IObject | undefined {
-    if (obj?.type() === Obj.ERROR) {
+    if (obj?.constructor === ErrorObj) {
         const err = obj as ErrorObj;
         err.line = node.tokenLine();
         return err;
