@@ -17,6 +17,8 @@ Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 
 ## Additional features
 
+-   Variable scopes for if and while blocks
+-   Assign existing variables without 'let' keyword
 -   Execute code from files via CLI command
 -   Line number in error message for parser and evaluator
 -   Float numbers (INT + FLOAT = FLOAT, INT + INT = INT)
