@@ -67,7 +67,7 @@ export function evalCode(
             if (isError(val)) {
                 return setLineError(node, val);
             }
-            const value = env.get(letStmt.name.value);
+            const value = env.getCurrScope(letStmt.name.value);
             if (value !== undefined) {
                 return new ErrorObj(
                     `Identifier ${letStmt.name.value} already exists`,
@@ -83,14 +83,14 @@ export function evalCode(
             if (isError(val)) {
                 return setLineError(stmt, val);
             }
-            const value = env.get(stmt.name.value);
-            if (value === undefined) {
+            const varEnv = env.getEnv(stmt.name.value);
+            if (varEnv === undefined) {
                 return new ErrorObj(
                     `${stmt.name.value} is not defined`,
                     stmt.tokenLine()
                 );
             }
-            env.set(stmt.name.value, val!);
+            varEnv.set(stmt.name.value, val!);
             break;
         }
         // Expressions
@@ -326,28 +326,30 @@ function evalIfExpression(
     ie: IfExpression,
     env: Environment
 ): IObject | undefined {
-    const condition = evalCode(ie.condition, env);
+    const blockEnv = Environment.newEnclosedEnvironment(env);
+    const condition = evalCode(ie.condition, blockEnv);
     if (isError(condition)) {
         return setLineError(ie, condition);
     }
     if (isTruthy(condition as IObject)) {
-        return evalCode(ie.consequence, env);
+        return evalCode(ie.consequence, blockEnv);
     } else if (ie.alternative) {
-        return evalCode(ie.alternative, env);
+        return evalCode(ie.alternative, blockEnv);
     } else {
         return NULL;
     }
 }
 
 function evalWhileStatement(we: WhileStatement, env: Environment) {
+    const blockEnv = Environment.newEnclosedEnvironment(env);
     const originalCondition = we.condition;
-    let condition = evalCode(we.condition, env);
+    let condition = evalCode(we.condition, blockEnv);
     if (isError(condition)) {
         return setLineError(we, condition);
     }
     while (isTruthy(condition as IObject)) {
-        evalBlockStatement(we.body, env);
-        condition = evalCode(originalCondition, env);
+        evalCode(we.body, blockEnv);
+        condition = evalCode(originalCondition, blockEnv);
     }
 }
 

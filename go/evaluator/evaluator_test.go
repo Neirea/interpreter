@@ -595,3 +595,18 @@ func TestAssignStatements(t *testing.T) {
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }
+
+func TestVariableScopes(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 0; if(!x){ x = 7; }; x;", 7},
+		{"let x = 0; if(!x){ let x = 10; }; x;", 0},
+		{"let x = 0; let y = 0; while(!y){ let x = 10; y = y + 1;  } x;", 0},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}

@@ -23,6 +23,27 @@ func (e *Environment) Get(name string) (Object, bool) {
 	}
 	return obj, ok
 }
+
+func (e *Environment) GetEnv(name string) (*Environment, bool) {
+	_, ok := e.store[name]
+	var env *Environment
+	if ok {
+		env = e
+	}
+	if !ok && e.outer != nil {
+		_, ok = e.outer.Get(name)
+		if ok {
+			env = e.outer
+		}
+	}
+	return env, ok
+}
+
+func (e *Environment) GetCurrScope(name string) (Object, bool) {
+	obj, ok := e.store[name]
+	return obj, ok
+}
+
 func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
 	return val

@@ -516,3 +516,19 @@ test("test assign statements", () => {
         testIntegerObject(evaluated, test.expected);
     }
 });
+
+test("test variable scopes", () => {
+    const tests = [
+        { input: "let x = 0; if(!x){ x = 7; }; x;", expected: 7 },
+        { input: "let x = 0; if(!x){ let x = 10; }; x;", expected: 0 },
+        // {
+        //     input: "let x = 0; let y = 0; while(!y){ let x = 10; y = y + 1;  } x;",
+        //     expected: 0,
+        // },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});

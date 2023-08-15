@@ -20,6 +20,19 @@ export class Environment {
         return obj;
     }
 
+    getEnv(name: string): Environment | undefined {
+        if (this.store[name]) {
+            return this;
+        }
+        if (this.outer?.get(name)) {
+            return this.outer;
+        }
+    }
+
+    getCurrScope(name: string): IObject | undefined {
+        return this.store[name];
+    }
+
     set(name: string, val: IObject): IObject {
         this.store[name] = val;
         return val;

@@ -26,7 +26,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(val) {
 			return setLineError(node, val)
 		}
-		_, ok := env.Get(node.Name.Value)
+		_, ok := env.GetCurrScope(node.Name.Value)
 		if ok {
 			return &object.Error{Line: node.TokenLine(), Message: fmt.Sprintf("Identifier %s already exists", node.Name.Value)}
 		}
@@ -36,11 +36,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(val) {
 			return setLineError(node, val)
 		}
-		_, ok := env.Get(node.Name.Value)
+		varEnv, ok := env.GetEnv(node.Name.Value)
 		if !ok {
 			return &object.Error{Line: node.TokenLine(), Message: fmt.Sprintf("%s is not defined", node.Name.Value)}
 		}
-		env.Set(node.Name.Value, val)
+		varEnv.Set(node.Name.Value, val)
 	// Expressions
 	case *ast.Identifier:
 		res := evalIdentifier(node, env)
@@ -245,28 +245,30 @@ func evalHashLiteral(
 }
 
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
-	condition := Eval(ie.Condition, env)
+	blockEnv := object.NewEnclosedEnvironment(env)
+	condition := Eval(ie.Condition, blockEnv)
 	if isError(condition) {
 		return setLineError(ie, condition)
 	}
 	if isTruthy(condition) {
-		return Eval(ie.Consequence, env)
+		return Eval(ie.Consequence, blockEnv)
 	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative, env)
+		return Eval(ie.Alternative, blockEnv)
 	} else {
 		return NULL
 	}
 }
 
 func evalWhileStatement(we *ast.WhileStatement, env *object.Environment) object.Object {
+	blockEnv := object.NewEnclosedEnvironment(env)
 	originalCondition := we.Condition
-	condition := Eval(we.Condition, env)
+	condition := Eval(we.Condition, blockEnv)
 	if isError(condition) {
 		return setLineError(we, condition)
 	}
 	for isTruthy(condition) {
-		evalBlockStatement(we.Body, env)
-		condition = Eval(originalCondition, env)
+		Eval(we.Body, blockEnv)
+		condition = Eval(originalCondition, blockEnv)
 	}
 	return NULL
 }
