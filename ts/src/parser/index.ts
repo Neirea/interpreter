@@ -1,5 +1,6 @@
 import {
     ArrayLiteral,
+    AssignStatement,
     BlockStatement,
     BooleanLiteral,
     CallExpression,
@@ -407,6 +408,10 @@ export class Parser {
                 return this.parseReturnStatement();
             case token.WHILE:
                 return this.parseWhileStatement();
+            case token.IDENT:
+                if (this.peekTokenIs(token.ASSIGN)) {
+                    return this.parseAssignStatement();
+                }
             default:
                 return this.parseExpressionStatement();
         }
@@ -420,11 +425,19 @@ export class Parser {
         this.nextToken();
         const value = this.parseExpression(Precedence.LOWEST);
         if (!value) return;
-
-        if (this.checkSemicolonError()) {
-            return;
-        }
+        if (this.checkSemicolonError()) return;
         return new LetStatement(tkn, name, value);
+    }
+
+    private parseAssignStatement(): AssignStatement | undefined {
+        const tkn = this.curToken;
+        const name = new Identifier(this.curToken, this.curToken.literal);
+        if (!this.expectPeek(token.ASSIGN)) return;
+        this.nextToken();
+        const value = this.parseExpression(Precedence.LOWEST);
+        if (!value) return;
+        if (this.checkSemicolonError()) return;
+        return new AssignStatement(tkn, name, value);
     }
 
     private parseReturnStatement(): ReturnStatement | undefined {

@@ -1,6 +1,7 @@
 import { Parser } from ".";
 import {
     ArrayLiteral,
+    AssignStatement,
     BooleanLiteral,
     CallExpression,
     Expression,
@@ -673,6 +674,32 @@ test("test while statement", () => {
     expect(stmt.body.statements[0]).toBeInstanceOf(ExpressionStatement);
     const body = stmt.body.statements[0] as ExpressionStatement;
     testIdentifier(body.expression, "x");
+});
+
+test("test assignment statements", () => {
+    const tests = [
+        { input: "x1x = 3;", expectedIdentifier: "x1x", expectedValue: 3 },
+        { input: "y = false;", expectedIdentifier: "y", expectedValue: false },
+        {
+            input: "foobar = x;",
+            expectedIdentifier: "foobar",
+            expectedValue: "x",
+        },
+    ];
+
+    for (const test of tests) {
+        const lexer = new Lexer(test.input);
+        const parser = new Parser(lexer);
+        const program = parser.parseProgram();
+        checkParserErrors(parser);
+        expect(program.statements.length).toEqual(1);
+        expect(program.statements[0]).toBeInstanceOf(AssignStatement);
+        const stmt = program.statements[0] as AssignStatement;
+        expect(stmt.name.value).toEqual(test.expectedIdentifier);
+        expect(stmt.name.tokenLiteral()).toEqual(test.expectedIdentifier);
+        const value = stmt.value;
+        testLiteralExpression(value, test.expectedValue);
+    }
 });
 
 function testInfixExpression(

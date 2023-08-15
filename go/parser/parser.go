@@ -275,6 +275,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.WHILE:
 		return p.parseWhileStatement()
 	default:
+		if p.curToken.Type == token.IDENT && p.peekTokenIs(token.ASSIGN) {
+			return p.parseAssignStatement()
+		}
 		stmt := p.parseExpressionStatement()
 		if stmt == nil {
 			return nil
@@ -301,6 +304,23 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 	return stmt
 }
+
+func (p *Parser) parseAssignStatement() *ast.AssignStatement {
+	stmt := &ast.AssignStatement{Token: p.curToken}
+
+	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.checkSemicolonError() {
+		return nil
+	}
+	return stmt
+}
+
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 	p.nextToken()

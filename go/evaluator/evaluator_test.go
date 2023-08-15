@@ -272,6 +272,14 @@ func TestErrorHandling(t *testing.T) {
 			`{"name": "Monkey"}[fn(x) { x }];`,
 			"unusable as hash key: FUNCTION",
 		},
+		{
+			"let x = 5; let x = 10;",
+			"Identifier x already exists",
+		},
+		{
+			"let x = 5; y = 10;",
+			"y is not defined",
+		},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -558,18 +566,32 @@ func TestHashIndexExpressions(t *testing.T) {
 	}
 }
 
-func TestWhileStatements(t *testing.T) {
+func TestWhileAndStatements(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
 	}{
-		{"let x = 0; while(x < 5) { let x = x + 1; } x;", 5},
-		{"let x = 0; while(x < 3) { let x = x + 1; } x;", 3},
-		{"let x = 10; while(x) { let x = x - 1; } x;", 0},
+		{"let x = 0; while(x < 5) { x = x + 1; } x;", 5},
+		{"let x = 0; while(x < 3) { x = x + 1; } x;", 3},
+		{"let x = 10; while(x) { x = x - 1; } x;", 0},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestAssignStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 0; x = 5; x;", 5},
+		{"let x = 0; let y = 3; x = 5 * y + 2; x;", 17},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }

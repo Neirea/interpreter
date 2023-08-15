@@ -1057,3 +1057,43 @@ func TestWhileStatement(t *testing.T) {
 		return
 	}
 }
+
+func TestAssignStatement(t *testing.T) {
+	tests := []struct {
+		input              string
+		expectedIdentifier string
+		expectedValue      interface{}
+	}{
+		{"x1x = 3;", "x1x", 3},
+		{"y = false;", "y", false},
+		{"foobar = x;", "foobar", "x"},
+	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
+				len(program.Statements))
+		}
+		stmt := program.Statements[0]
+		AssignStmt, ok := stmt.(*ast.AssignStatement)
+		if !ok {
+			t.Errorf("s not *ast.AssignStatement. got=%T", stmt)
+		}
+
+		if AssignStmt.Name.Value != tt.expectedIdentifier {
+			t.Errorf("AssignStmt.Name.Value not '%s'. got=%s", tt.expectedIdentifier, AssignStmt.Name.Value)
+		}
+
+		if AssignStmt.Name.TokenLiteral() != tt.expectedIdentifier {
+			t.Errorf("AssignStmt.Name.TokenLiteral() not '%s'. got=%s",
+				tt.expectedIdentifier, AssignStmt.Name.TokenLiteral())
+		}
+		val := AssignStmt.Value
+		if !testLiteralExpression(t, val, tt.expectedValue) {
+			return
+		}
+	}
+}

@@ -1,5 +1,6 @@
 import {
     ArrayLiteral,
+    AssignStatement,
     BlockStatement,
     BooleanLiteral,
     CallExpression,
@@ -61,11 +62,35 @@ export function evalCode(
         case BlockStatement:
             return evalBlockStatement(node as BlockStatement, env);
         case LetStatement: {
-            const val = evalCode((node as LetStatement).value, env);
+            const letStmt = node as LetStatement;
+            const val = evalCode(letStmt.value, env);
             if (isError(val)) {
                 return setLineError(node, val);
             }
-            env.set((node as LetStatement).name.value, val as IObject);
+            const value = env.get(letStmt.name.value);
+            if (value !== undefined) {
+                return new ErrorObj(
+                    `Identifier ${letStmt.name.value} already exists`,
+                    letStmt.tokenLine()
+                );
+            }
+            env.set(letStmt.name.value, val!);
+            break;
+        }
+        case AssignStatement: {
+            const stmt = node as AssignStatement;
+            const val = evalCode(stmt.value, env);
+            if (isError(val)) {
+                return setLineError(stmt, val);
+            }
+            const value = env.get(stmt.name.value);
+            if (value === undefined) {
+                return new ErrorObj(
+                    `${stmt.name.value} is not defined`,
+                    stmt.tokenLine()
+                );
+            }
+            env.set(stmt.name.value, val!);
             break;
         }
         // Expressions

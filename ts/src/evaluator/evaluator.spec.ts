@@ -235,6 +235,14 @@ test("test error handling", () => {
             input: `{"name": "Monkey"}[fn(x) { x }];`,
             expected: "unusable as hash key: FUNCTION",
         },
+        {
+            input: "let x = 5; let x = 10;",
+            expected: "Identifier x already exists",
+        },
+        {
+            input: "let x = 5; y = 10;",
+            expected: "y is not defined",
+        },
     ];
 
     for (const test of tests) {
@@ -483,12 +491,24 @@ test("test hash index expressions", () => {
 
 test("test while statements", () => {
     const tests = [
-        { input: "let x = 0; while(x < 5) { let x = x + 1; } x;", expected: 5 },
-        { input: "let x = 0; while(x < 3) { let x = x + 1; } x;", expected: 3 },
+        { input: "let x = 0; while(x < 5) { x = x + 1; } x;", expected: 5 },
+        { input: "let x = 0; while(x < 3) { x = x + 1; } x;", expected: 3 },
         {
-            input: "let x = 10; while(x) { let x = x - 1; } x;",
+            input: "let x = 10; while(x) { x = x - 1; } x;",
             expected: 0,
         },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});
+
+test("test assign statements", () => {
+    const tests = [
+        { input: "let x = 0; x = 5; x;", expected: 5 },
+        { input: "let x = 0; let y = 3; x = 5 * y + 2; x;", expected: 17 },
     ];
 
     for (const test of tests) {

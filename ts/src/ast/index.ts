@@ -382,3 +382,22 @@ export class WhileStatement implements Statement {
         return `while${this.condition.toString()} ${this.body.toString()}`;
     }
 }
+
+export class AssignStatement implements Statement {
+    constructor(
+        public token: Token,
+        public name: Identifier,
+        public value: Expression
+    ) {}
+    statementNode() {}
+
+    tokenLine() {
+        return this.token.line;
+    }
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return `${this.name} = ${this.value ? this.value.toString() : ""};`;
+    }
+}
