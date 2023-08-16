@@ -1,7 +1,7 @@
 import { Parser } from ".";
 import {
     ArrayLiteral,
-    AssignStatement,
+    AssignExpression,
     BooleanLiteral,
     CallExpression,
     Expression,
@@ -693,11 +693,13 @@ test("test assignment statements", () => {
         const program = parser.parseProgram();
         checkParserErrors(parser);
         expect(program.statements.length).toEqual(1);
-        expect(program.statements[0]).toBeInstanceOf(AssignStatement);
-        const stmt = program.statements[0] as AssignStatement;
-        expect(stmt.name.value).toEqual(test.expectedIdentifier);
-        expect(stmt.name.tokenLiteral()).toEqual(test.expectedIdentifier);
-        const value = stmt.value;
+        expect(program.statements[0]).toBeInstanceOf(ExpressionStatement);
+        const stmt = program.statements[0] as ExpressionStatement;
+        expect(stmt.expression).toBeInstanceOf(AssignExpression);
+        const assignExpr = stmt.expression as AssignExpression;
+        expect(assignExpr.name.value).toEqual(test.expectedIdentifier);
+        expect(assignExpr.name.tokenLiteral()).toEqual(test.expectedIdentifier);
+        const value = assignExpr.value;
         testLiteralExpression(value, test.expectedValue);
     }
 });

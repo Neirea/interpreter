@@ -381,16 +381,16 @@ func (we *WhileStatement) String() string {
 	return out.String()
 }
 
-type AssignStatement struct {
+type AssignExpression struct {
 	Token token.Token // the token.LET token
 	Name  *Identifier
 	Value Expression
 }
 
-func (as *AssignStatement) statementNode()       {}
-func (as *AssignStatement) TokenLine() int       { return as.Token.Line }
-func (as *AssignStatement) TokenLiteral() string { return as.Token.Literal }
-func (as *AssignStatement) String() string {
+func (as *AssignExpression) expressionNode()      {}
+func (as *AssignExpression) TokenLine() int       { return as.Token.Line }
+func (as *AssignExpression) TokenLiteral() string { return as.Token.Literal }
+func (as *AssignExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString(as.Name.String())
 	out.WriteString(" = ")

@@ -1,6 +1,6 @@
 import {
     ArrayLiteral,
-    AssignStatement,
+    AssignExpression,
     BlockStatement,
     BooleanLiteral,
     CallExpression,
@@ -33,8 +33,9 @@ const Precedence = {
     SUM: 4,
     PRODUCT: 5,
     PREFIX: 6,
-    CALL: 7,
-    INDEX: 8,
+    ASSIGN: 7,
+    CALL: 8,
+    INDEX: 9,
 };
 
 const precedences: { [key: TokenType]: number } = {
@@ -48,6 +49,7 @@ const precedences: { [key: TokenType]: number } = {
     [token.MINUS]: Precedence.SUM,
     [token.SLASH]: Precedence.PRODUCT,
     [token.ASTERISK]: Precedence.PRODUCT,
+    [token.ASSIGN]: Precedence.ASSIGN,
     [token.LPAREN]: Precedence.CALL,
     [token.LBRACKET]: Precedence.INDEX,
 };
@@ -102,6 +104,7 @@ export class Parser {
         this.registerInfix(token.LT, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.GT, (l) => this.parseInfixExpression(l));
         this.registerInfix(token.LPAREN, (l) => this.parseCallExpression(l));
+        this.registerInfix(token.ASSIGN, (l) => this.parseAssignExpression(l));
 
         this.curToken = this.lexer.nextToken();
         this.peekToken = this.lexer.nextToken();
@@ -408,10 +411,6 @@ export class Parser {
                 return this.parseReturnStatement();
             case token.WHILE:
                 return this.parseWhileStatement();
-            case token.IDENT:
-                if (this.peekTokenIs(token.ASSIGN)) {
-                    return this.parseAssignStatement();
-                }
             default:
                 return this.parseExpressionStatement();
         }
@@ -429,15 +428,19 @@ export class Parser {
         return new LetStatement(tkn, name, value);
     }
 
-    private parseAssignStatement(): AssignStatement | undefined {
+    private parseAssignExpression(
+        left: Expression | undefined
+    ): AssignExpression | undefined {
+        if (!(left instanceof Identifier)) {
+            const msg = `expected valid identifier. got=${left}`;
+            this.errors.push({ message: msg, line: this.curToken.line });
+            return;
+        }
         const tkn = this.curToken;
-        const name = new Identifier(this.curToken, this.curToken.literal);
-        if (!this.expectPeek(token.ASSIGN)) return;
         this.nextToken();
         const value = this.parseExpression(Precedence.LOWEST);
-        if (!value) return;
-        if (this.checkSemicolonError()) return;
-        return new AssignStatement(tkn, name, value);
+        if (value === undefined) return;
+        return new AssignExpression(tkn, left, value);
     }
 
     private parseReturnStatement(): ReturnStatement | undefined {

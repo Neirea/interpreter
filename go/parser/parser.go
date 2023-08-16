@@ -16,6 +16,7 @@ const (
 	SUM         // +
 	PRODUCT     // *
 	PREFIX      // -X or !X
+	ASSIGN      // =
 	CALL        // myFunction(X)
 	INDEX
 )
@@ -31,6 +32,7 @@ var precedences = map[token.TokenType]int{
 	token.MINUS:    SUM,
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
+	token.ASSIGN:   ASSIGN,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
 }
@@ -83,6 +85,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.ASSIGN, p.parseAssignExpression)
 	// Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
 	p.nextToken()
@@ -275,9 +278,6 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.WHILE:
 		return p.parseWhileStatement()
 	default:
-		if p.curToken.Type == token.IDENT && p.peekTokenIs(token.ASSIGN) {
-			return p.parseAssignStatement()
-		}
 		stmt := p.parseExpressionStatement()
 		if stmt == nil {
 			return nil
@@ -305,20 +305,17 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
-func (p *Parser) parseAssignStatement() *ast.AssignStatement {
-	stmt := &ast.AssignStatement{Token: p.curToken}
-
-	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-	if !p.expectPeek(token.ASSIGN) {
+func (p *Parser) parseAssignExpression(left ast.Expression) ast.Expression {
+	name, ok := left.(*ast.Identifier)
+	if !ok {
+		msg := fmt.Sprintf("expected valid identifier. got=%q", left)
+		p.errors = append(p.errors, ParseError{Message: msg, Line: p.curToken.Line})
 		return nil
 	}
+	expr := &ast.AssignExpression{Token: p.curToken, Name: name}
 	p.nextToken()
-	stmt.Value = p.parseExpression(LOWEST)
-
-	if p.checkSemicolonError() {
-		return nil
-	}
-	return stmt
+	expr.Value = p.parseExpression(LOWEST)
+	return expr
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {

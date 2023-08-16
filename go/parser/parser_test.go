@@ -1077,21 +1077,21 @@ func TestAssignStatement(t *testing.T) {
 			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
 				len(program.Statements))
 		}
-		stmt := program.Statements[0]
-		AssignStmt, ok := stmt.(*ast.AssignStatement)
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		assignExpr, ok := stmt.Expression.(*ast.AssignExpression)
 		if !ok {
-			t.Errorf("s not *ast.AssignStatement. got=%T", stmt)
+			t.Errorf("s not *ast.AssignExpression. got=%T", stmt.Expression)
 		}
 
-		if AssignStmt.Name.Value != tt.expectedIdentifier {
-			t.Errorf("AssignStmt.Name.Value not '%s'. got=%s", tt.expectedIdentifier, AssignStmt.Name.Value)
+		if assignExpr.Name.Value != tt.expectedIdentifier {
+			t.Errorf("AssignExpression.Name.Value not '%s'. got=%s", tt.expectedIdentifier, assignExpr.Name.Value)
 		}
 
-		if AssignStmt.Name.TokenLiteral() != tt.expectedIdentifier {
-			t.Errorf("AssignStmt.Name.TokenLiteral() not '%s'. got=%s",
-				tt.expectedIdentifier, AssignStmt.Name.TokenLiteral())
+		if assignExpr.Name.TokenLiteral() != tt.expectedIdentifier {
+			t.Errorf("AssignExpression.Name.TokenLiteral() not '%s'. got=%s",
+				tt.expectedIdentifier, assignExpr.Name.TokenLiteral())
 		}
-		val := AssignStmt.Value
+		val := assignExpr.Value
 		if !testLiteralExpression(t, val, tt.expectedValue) {
 			return
 		}

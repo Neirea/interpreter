@@ -383,13 +383,13 @@ export class WhileStatement implements Statement {
     }
 }
 
-export class AssignStatement implements Statement {
+export class AssignExpression implements Expression {
     constructor(
         public token: Token,
         public name: Identifier,
         public value: Expression
     ) {}
-    statementNode() {}
+    expressionNode() {}
 
     tokenLine() {
         return this.token.line;

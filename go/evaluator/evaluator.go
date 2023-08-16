@@ -31,7 +31,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return &object.Error{Line: node.TokenLine(), Message: fmt.Sprintf("Identifier %s already exists", node.Name.Value)}
 		}
 		env.Set(node.Name.Value, val)
-	case *ast.AssignStatement:
+	case *ast.AssignExpression:
 		val := Eval(node.Value, env)
 		if isError(val) {
 			return setLineError(node, val)

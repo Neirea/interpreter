@@ -1,6 +1,6 @@
 import {
     ArrayLiteral,
-    AssignStatement,
+    AssignExpression,
     BlockStatement,
     BooleanLiteral,
     CallExpression,
@@ -77,8 +77,8 @@ export function evalCode(
             env.set(letStmt.name.value, val!);
             break;
         }
-        case AssignStatement: {
-            const stmt = node as AssignStatement;
+        case AssignExpression: {
+            const stmt = node as AssignExpression;
             const val = evalCode(stmt.value, env);
             if (isError(val)) {
                 return setLineError(stmt, val);
