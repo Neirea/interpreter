@@ -3,10 +3,17 @@ let dict = {"hello":"\tHello ","world":"\tWorld!"};
 print(dict["hello"],dict["world"]);
 
 let fib = fn(n){
-    if(n <= 1) {
-        return n;
+    let a = 0;
+    let b = 1;
+    let c = a;
+
+    let i = 1;
+    for(; i < n; i = i + 1){
+        c = a + b;
+        a = b;
+        b = c;
     }
-    return fib(n - 1) + fib(n - 2);
+    return c;
 };
 
 print(fib(10));

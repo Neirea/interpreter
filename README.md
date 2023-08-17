@@ -17,8 +17,8 @@ Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 
 ## Additional features
 
--   **While** loops
--   Variable scopes for **if** and **while** blocks
+-   **for** and **while** loops
+-   Variable scopes for **if**, **for** and **while** blocks
 -   Assign existing variables without **let** keyword
 -   Execute code from files via CLI command
 -   Line number in error message for parser and evaluator
