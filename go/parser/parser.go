@@ -182,6 +182,38 @@ func (p *Parser) parseWhileStatement() ast.Statement {
 	p.skipSemicolon()
 	return statement
 }
+func (p *Parser) parseForStatement() ast.Statement {
+	statement := &ast.ForStatement{Token: p.curToken}
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+	p.nextToken()
+	if p.curTokenIs(token.SEMICOLON) {
+		statement.Init = nil
+	} else {
+		statement.Init = p.parseExpression(LOWEST)
+		if !p.expectPeek(token.SEMICOLON) {
+			return nil
+		}
+	}
+	p.nextToken()
+	statement.Condition = p.parseExpression(LOWEST)
+	if !p.expectPeek(token.SEMICOLON) {
+		return nil
+	}
+	p.nextToken()
+	if p.curTokenIs(token.RPAREN) {
+		statement.Update = nil
+	} else {
+		statement.Update = p.parseExpression(LOWEST)
+		if !p.expectPeek(token.RPAREN) {
+			return nil
+		}
+	}
+	p.nextToken()
+	statement.Body = p.parseBlockStatement()
+	return statement
+}
 func (p *Parser) parseArrayLiteral() ast.Expression {
 	array := &ast.ArrayLiteral{Token: p.curToken}
 	array.Elements = p.parseExpressionList(token.RBRACKET)
@@ -277,6 +309,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseReturnStatement()
 	case token.WHILE:
 		return p.parseWhileStatement()
+	case token.FOR:
+		return p.parseForStatement()
 	default:
 		stmt := p.parseExpressionStatement()
 		if stmt == nil {

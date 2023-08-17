@@ -7,6 +7,7 @@ import {
     Expression,
     ExpressionStatement,
     FloatLiteral,
+    ForStatement,
     FunctionLiteral,
     HashLiteral,
     Identifier,
@@ -346,6 +347,30 @@ export class Parser {
         return new WhileStatement(tkn, condition, body);
     }
 
+    private parseForStatement(): Statement | undefined {
+        const tkn = this.curToken;
+        if (!this.expectPeek(token.LPAREN)) return;
+        this.nextToken();
+        let init: Expression | undefined;
+        if (!this.curTokenIs(token.SEMICOLON)) {
+            init = this.parseExpression(Precedence.LOWEST);
+            if (!this.expectPeek(token.SEMICOLON)) return;
+        }
+        this.nextToken();
+        const condition = this.parseExpression(Precedence.LOWEST);
+        if (condition === undefined) return;
+        if (!this.expectPeek(token.SEMICOLON)) return;
+        this.nextToken();
+        let update: Expression | undefined;
+        if (!this.curTokenIs(token.RPAREN)) {
+            update = this.parseExpression(Precedence.LOWEST);
+            if (!this.expectPeek(token.RPAREN)) return;
+        }
+        this.nextToken();
+        const body = this.parseBlockStatement();
+        return new ForStatement(tkn, init, condition, update, body);
+    }
+
     private parseFunctionLiteral(): Expression | undefined {
         const tkn = this.curToken;
         if (!this.expectPeek(token.LPAREN)) {
@@ -411,6 +436,8 @@ export class Parser {
                 return this.parseReturnStatement();
             case token.WHILE:
                 return this.parseWhileStatement();
+            case token.FOR:
+                return this.parseForStatement();
             default:
                 return this.parseExpressionStatement();
         }

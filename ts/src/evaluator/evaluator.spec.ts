@@ -489,22 +489,6 @@ test("test hash index expressions", () => {
     }
 });
 
-test("test while statements", () => {
-    const tests = [
-        { input: "let x = 0; while(x < 5) { x = x + 1; } x;", expected: 5 },
-        { input: "let x = 0; while(x < 3) { x = x + 1; } x;", expected: 3 },
-        {
-            input: "let x = 10; while(x) { x = x - 1; } x;",
-            expected: 0,
-        },
-    ];
-
-    for (const test of tests) {
-        const evaluated = testEval(test.input);
-        testIntegerObject(evaluated, test.expected);
-    }
-});
-
 test("test assign statements", () => {
     const tests = [
         { input: "let x = 0; x = 5; x;", expected: 5 },
@@ -521,10 +505,70 @@ test("test variable scopes", () => {
     const tests = [
         { input: "let x = 0; if(!x){ x = 7; }; x;", expected: 7 },
         { input: "let x = 0; if(!x){ let x = 10; }; x;", expected: 0 },
-        // {
-        //     input: "let x = 0; let y = 0; while(!y){ let x = 10; y = y + 1;  } x;",
-        //     expected: 0,
-        // },
+        {
+            input: "let x = 0; let y = 0; while(!y){ let x = 10; y = y + 1;  } x;",
+            expected: 0,
+        },
+        {
+            input: "let x = 0; let y = 0; for(;!y;){ let x = 10; y = y + 1;  } x;",
+            expected: 0,
+        },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});
+
+test("test while statements", () => {
+    const tests = [
+        { input: "let x = 0; while(x < 5) { x = x + 1; } x;", expected: 5 },
+        { input: "let x = 0; while(x < 3) { x = x + 1; } x;", expected: 3 },
+        {
+            input: "let x = 10; while(x) { x = x - 1; } x;",
+            expected: 0,
+        },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});
+
+test("test for statements", () => {
+    const tests = [
+        {
+            input: "let i = 0; let x = 0; for( i = 4; i ; i = i - 1) { x = x + 1; } x;",
+            expected: 4,
+        },
+        {
+            input: "let i = 5; let x = 0; for( i = 0; i < 3; i = i + 1) { x = x + 1; } x;",
+            expected: 3,
+        },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});
+
+test("test empty for statements", () => {
+    const tests = [
+        {
+            input: "let i = 4; let x = 0; for(; i ; i = i - 1) { x = x + 1; } x;",
+            expected: 4,
+        },
+        {
+            input: "let i = 5; let x = 0; for( i = 0; i < 3; ) { x = x + 1; i = i + 1; } x;",
+            expected: 3,
+        },
+        {
+            input: "let i = 0; for(; i < 7;) { i = i + 1; } i;",
+            expected: 7,
+        },
     ];
 
     for (const test of tests) {

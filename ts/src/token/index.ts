@@ -49,6 +49,7 @@ export const token = {
     RETURN: "RETURN",
     MACRO: "MACRO",
     WHILE: "WHILE",
+    FOR: "FOR",
 };
 
 export const keywords: { [key: string]: TokenType } = {
@@ -61,6 +62,7 @@ export const keywords: { [key: string]: TokenType } = {
     return: token.RETURN,
     macro: token.MACRO,
     while: token.WHILE,
+    for: token.FOR,
 };
 
 export function lookupIdent(ident: string): TokenType {

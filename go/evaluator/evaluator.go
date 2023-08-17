@@ -137,6 +137,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.ReturnValue{Value: val}
 	case *ast.WhileStatement:
 		return evalWhileStatement(node, env)
+	case *ast.ForStatement:
+		return evalForStatement(node, env)
 	case *ast.ErrorLiteral:
 		return &object.Error{Message: node.Message, Line: node.TokenLine()}
 	}
@@ -259,16 +261,39 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	}
 }
 
-func evalWhileStatement(we *ast.WhileStatement, env *object.Environment) object.Object {
+func evalWhileStatement(ws *ast.WhileStatement, env *object.Environment) object.Object {
 	blockEnv := object.NewEnclosedEnvironment(env)
-	originalCondition := we.Condition
-	condition := Eval(we.Condition, blockEnv)
+	condition := Eval(ws.Condition, blockEnv)
 	if isError(condition) {
-		return setLineError(we, condition)
+		return setLineError(ws, condition)
 	}
 	for isTruthy(condition) {
-		Eval(we.Body, blockEnv)
-		condition = Eval(originalCondition, blockEnv)
+		Eval(ws.Body, blockEnv)
+		condition = Eval(ws.Condition, blockEnv)
+	}
+	return NULL
+}
+
+func evalForStatement(fs *ast.ForStatement, env *object.Environment) object.Object {
+	blockEnv := object.NewEnclosedEnvironment(env)
+	if fs.Init != nil {
+		initial := Eval(fs.Init, blockEnv)
+		if isError(initial) {
+			return setLineError(fs, initial)
+		}
+	}
+
+	condition := Eval(fs.Condition, blockEnv)
+	if isError(condition) {
+		return setLineError(fs, condition)
+	}
+
+	for isTruthy(condition) {
+		Eval(fs.Body, blockEnv)
+		if fs.Update != nil {
+			Eval(fs.Update, blockEnv)
+		}
+		condition = Eval(fs.Condition, blockEnv)
 	}
 	return NULL
 }

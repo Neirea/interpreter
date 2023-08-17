@@ -7,6 +7,7 @@ import {
     Expression,
     ExpressionStatement,
     FloatLiteral,
+    ForStatement,
     FunctionLiteral,
     HashLiteral,
     Identifier,
@@ -704,6 +705,44 @@ test("test assignment statements", () => {
     }
 });
 
+test("test for statement", () => {
+    const input = "let i = 0; for(i = 0; i < 3; i = 5) { i; }";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program.statements.length).toEqual(2);
+    expect(program.statements[1]).toBeInstanceOf(ForStatement);
+    const stmt = program.statements[1] as ForStatement;
+    expect(stmt.init).toBeInstanceOf(AssignExpression);
+    testLiteralExpression((stmt.init as AssignExpression).value, 0);
+    testInfixExpression(stmt.condition, "i", "<", 3);
+    expect(stmt.update).toBeInstanceOf(AssignExpression);
+    testLiteralExpression((stmt.update as AssignExpression).value, 5);
+    expect(stmt.body.statements.length).toEqual(1);
+    expect(stmt.body.statements[0]).toBeInstanceOf(ExpressionStatement);
+    const bodyStmt = stmt.body.statements[0] as ExpressionStatement;
+    testIdentifier(bodyStmt.expression, "i");
+});
+
+test("test empty for statement", () => {
+    const input = "let i = 0; for(; i < 3;) { i; }";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program.statements.length).toEqual(2);
+    expect(program.statements[1]).toBeInstanceOf(ForStatement);
+    const stmt = program.statements[1] as ForStatement;
+    expect(stmt.init).not.toBeDefined();
+    testInfixExpression(stmt.condition, "i", "<", 3);
+    expect(stmt.update).not.toBeDefined();
+    expect(stmt.body.statements.length).toEqual(1);
+    expect(stmt.body.statements[0]).toBeInstanceOf(ExpressionStatement);
+    const bodyStmt = stmt.body.statements[0] as ExpressionStatement;
+    testIdentifier(bodyStmt.expression, "i");
+});
+
 function testInfixExpression(
     exp: Expression,
     left: any,
@@ -764,7 +803,7 @@ function checkParserErrors(parser: Parser) {
         return;
     }
     console.error(`parser has ${errors.length} errors`);
-    for (const msg of errors) {
-        throw new Error(`parser error: ${msg}`);
+    for (const error of errors) {
+        throw new Error(`parser error: ${error.message}`);
     }
 }

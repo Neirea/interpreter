@@ -28,6 +28,7 @@ test("test lexer", () => {
         {"foo": "bar"}
         macro(x, y) { x + y; };
         while(true) { x + y; }
+        for(let i=0;i<3;i=i+1){}
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let", line: 1 },
@@ -145,7 +146,26 @@ test("test lexer", () => {
         { type: token.IDENT, literal: "y", line: 26 },
         { type: token.SEMICOLON, literal: ";", line: 26 },
         { type: token.RBRACE, literal: "}", line: 26 },
-        { type: token.EOF, literal: "EOF", line: 27 },
+        { type: token.FOR, literal: "for", line: 27 },
+        { type: token.LPAREN, literal: "(", line: 27 },
+        { type: token.LET, literal: "let", line: 27 },
+        { type: token.IDENT, literal: "i", line: 27 },
+        { type: token.ASSIGN, literal: "=", line: 27 },
+        { type: token.INT, literal: "0", line: 27 },
+        { type: token.SEMICOLON, literal: ";", line: 27 },
+        { type: token.IDENT, literal: "i", line: 27 },
+        { type: token.LT, literal: "<", line: 27 },
+        { type: token.INT, literal: "3", line: 27 },
+        { type: token.SEMICOLON, literal: ";", line: 27 },
+        { type: token.IDENT, literal: "i", line: 27 },
+        { type: token.ASSIGN, literal: "=", line: 27 },
+        { type: token.IDENT, literal: "i", line: 27 },
+        { type: token.PLUS, literal: "+", line: 27 },
+        { type: token.INT, literal: "1", line: 27 },
+        { type: token.RPAREN, literal: ")", line: 27 },
+        { type: token.LBRACE, literal: "{", line: 27 },
+        { type: token.RBRACE, literal: "}", line: 27 },
+        { type: token.EOF, literal: "EOF", line: 28 },
     ];
 
     const lexer = new Lexer(input);

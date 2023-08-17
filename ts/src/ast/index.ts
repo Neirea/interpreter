@@ -401,3 +401,25 @@ export class AssignExpression implements Expression {
         return `${this.name} = ${this.value ? this.value.toString() : ""};`;
     }
 }
+
+export class ForStatement implements Statement {
+    constructor(
+        public token: Token,
+        public init: Expression | undefined,
+        public condition: Expression,
+        public update: Expression | undefined,
+        public body: BlockStatement
+    ) {}
+    statementNode() {}
+    tokenLine() {
+        return this.token.line;
+    }
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        const initStr = this.init ? this.init.toString() : "";
+        const updateStr = this.update ? this.update.toString() : "";
+        return `for(${initStr};${this.condition.toString()};${updateStr}) ${this.body.toString()}`;
+    }
+}

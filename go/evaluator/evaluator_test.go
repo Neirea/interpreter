@@ -566,22 +566,6 @@ func TestHashIndexExpressions(t *testing.T) {
 	}
 }
 
-func TestWhileAndStatements(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected int64
-	}{
-		{"let x = 0; while(x < 5) { x = x + 1; } x;", 5},
-		{"let x = 0; while(x < 3) { x = x + 1; } x;", 3},
-		{"let x = 10; while(x) { x = x - 1; } x;", 0},
-	}
-	for _, tt := range tests {
-		evaluated := testEval(tt.input)
-
-		testIntegerObject(t, evaluated, tt.expected)
-	}
-}
-
 func TestAssignStatements(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -604,9 +588,57 @@ func TestVariableScopes(t *testing.T) {
 		{"let x = 0; if(!x){ x = 7; }; x;", 7},
 		{"let x = 0; if(!x){ let x = 10; }; x;", 0},
 		{"let x = 0; let y = 0; while(!y){ let x = 10; y = y + 1;  } x;", 0},
+		{"let x = 0; let y = 0; for(;!y;){ let x = 10; y = y + 1;  } x;", 0},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestWhileStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 0; while(x < 5) { x = x + 1; } x;", 5},
+		{"let x = 0; while(x < 3) { x = x + 1; } x;", 3},
+		{"let x = 10; while(x) { x = x - 1; } x;", 0},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestForStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let i = 0; let x = 0; for( i = 4; i ; i = i - 1) { x = x + 1; } x;", 4},
+		{"let i = 5; let x = 0; for( i = 0; i < 3; i = i + 1) { x = x + 1; } x;", 3},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestEmptyForStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let i = 0; let x = 0; for( ; i < 5; i = i + 1) { x = x + 1; } x;", 5},
+		{"let i = 5; for(i = 0; i < 3;) { i = i + 1; } i;", 3},
+		{"let i = 0; for(; i < 7;) { i = i + 1; } i;", 7},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }

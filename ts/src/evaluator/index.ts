@@ -8,6 +8,7 @@ import {
     Expression,
     ExpressionStatement,
     FloatLiteral,
+    ForStatement,
     FunctionLiteral,
     HashLiteral,
     INode,
@@ -210,6 +211,9 @@ export function evalCode(
         case WhileStatement: {
             return evalWhileStatement(node as WhileStatement, env);
         }
+        case ForStatement: {
+            return evalForStatement(node as ForStatement, env);
+        }
         case ErrorLiteral:
             return new ErrorObj(
                 (node as ErrorLiteral).message,
@@ -342,15 +346,39 @@ function evalIfExpression(
 
 function evalWhileStatement(we: WhileStatement, env: Environment) {
     const blockEnv = Environment.newEnclosedEnvironment(env);
-    const originalCondition = we.condition;
     let condition = evalCode(we.condition, blockEnv);
     if (isError(condition)) {
         return setLineError(we, condition);
     }
     while (isTruthy(condition as IObject)) {
         evalCode(we.body, blockEnv);
-        condition = evalCode(originalCondition, blockEnv);
+        condition = evalCode(we.condition, blockEnv);
     }
+}
+
+function evalForStatement(
+    fs: ForStatement,
+    env: Environment
+): IObject | undefined {
+    const blockEnv = Environment.newEnclosedEnvironment(env);
+    if (fs.init) {
+        const initial = evalCode(fs.init, blockEnv);
+        if (isError(initial)) {
+            return setLineError(fs, initial);
+        }
+    }
+    let condition = evalCode(fs.condition, blockEnv);
+    if (isError(condition)) {
+        return setLineError(fs, condition);
+    }
+    while (isTruthy(condition as IObject)) {
+        evalCode(fs.body, blockEnv);
+        if (fs.update) {
+            evalCode(fs.update, blockEnv);
+        }
+        condition = evalCode(fs.condition, blockEnv);
+    }
+    return NULL;
 }
 
 function evalIdentifier(node: Identifier, env: Environment): IObject {
