@@ -1,5 +1,6 @@
-let dict = {"hello":"\tHello ","world":"\tWorld!"};
-
+let dict = {};
+add(dict,"hello","\tHello ");
+add(dict,"world","\tWorld!");
 print(dict["hello"],dict["world"]);
 
 let fib = fn(n){

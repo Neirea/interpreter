@@ -96,6 +96,28 @@ var builtins = map[string]*object.Builtin{
 			return &object.Array{Elements: newElements}
 		},
 	},
+	"add": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 3 {
+				return newError("wrong number of arguments. got=%d, want=3",
+					len(args))
+			}
+			if args[0].Type() != object.HASH_OBJ {
+				return newError("argument to `add` must be HASHMAP, got %s",
+					args[0].Type())
+			}
+			hash := args[0].(*object.Hash)
+
+			hashKey, ok := args[1].(object.Hashable)
+
+			if !ok {
+				return newError("unusable as hash key: %s", args[1].Type())
+			}
+			hashed := hashKey.HashKey()
+			hash.Pairs[hashed] = object.HashPair{Key: args[1], Value: args[2]}
+			return hash
+		},
+	},
 	"print": {
 		Fn: func(args ...object.Object) object.Object {
 			for _, arg := range args {
