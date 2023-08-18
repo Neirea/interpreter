@@ -428,3 +428,14 @@ func (fs *ForStatement) String() string {
 	out.WriteString(fs.Body.String())
 	return out.String()
 }
+
+type BreakStatement struct {
+	Token token.Token
+}
+
+func (bs *BreakStatement) statementNode()       {}
+func (bs *BreakStatement) TokenLine() int       { return bs.Token.Line }
+func (bs *BreakStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BreakStatement) String() string {
+	return bs.Token.Literal + ";"
+}

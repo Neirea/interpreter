@@ -15,6 +15,7 @@ export const Obj = {
     RETURN_VALUE: "RETURN_VALUE",
     QUOTE: "QUOTE",
     MACRO: "MACRO",
+    BREAK: "BREAK",
     ERROR: "ERROR",
 };
 type ObjectType = string;
@@ -207,5 +208,15 @@ export class Macro implements IObject {
     inspect() {
         const params = this.parameters.map((p) => p.toString());
         return `macro(${params.join(", ")}) {\n${this.body.toString()}\n}`;
+    }
+}
+
+export class Break implements IObject {
+    constructor(public line: number) {}
+    type() {
+        return Obj.BREAK;
+    }
+    inspect() {
+        return "break";
     }
 }

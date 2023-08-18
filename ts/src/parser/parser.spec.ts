@@ -3,6 +3,7 @@ import {
     ArrayLiteral,
     AssignExpression,
     BooleanLiteral,
+    BreakStatement,
     CallExpression,
     Expression,
     ExpressionStatement,
@@ -741,6 +742,20 @@ test("test empty for statement", () => {
     expect(stmt.body.statements[0]).toBeInstanceOf(ExpressionStatement);
     const bodyStmt = stmt.body.statements[0] as ExpressionStatement;
     testIdentifier(bodyStmt.expression, "i");
+});
+
+test("test break statement", () => {
+    const input = "while (true) { break; }";
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program.statements.length).toEqual(1);
+    expect(program.statements[0]).toBeInstanceOf(WhileStatement);
+    const stmt = program.statements[0] as WhileStatement;
+    expect(stmt.body.statements.length).toEqual(1);
+    expect(stmt.body.statements[0]).toBeInstanceOf(BreakStatement);
+    expect(stmt.body.statements[0].toString()).toEqual("break;");
 });
 
 function testInfixExpression(

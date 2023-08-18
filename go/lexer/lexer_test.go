@@ -33,6 +33,7 @@ func TestNextToken(t *testing.T) {
 		macro(x, y) { x + y; };
 		while(true) { x + y; }
 		for(let i=0;i<3;i=i+1){}
+		break;
 	`
 	tests := []struct {
 		expectedType    token.TokenType
@@ -173,7 +174,9 @@ func TestNextToken(t *testing.T) {
 		{token.RPAREN, ")", 27},
 		{token.LBRACE, "{", 27},
 		{token.RBRACE, "}", 27},
-		{token.EOF, "", 28},
+		{token.BREAK, "break", 28},
+		{token.SEMICOLON, ";", 28},
+		{token.EOF, "", 29},
 	}
 	l := New(input)
 	for i, tt := range tests {

@@ -3,6 +3,7 @@ import {
     AssignExpression,
     BlockStatement,
     BooleanLiteral,
+    BreakStatement,
     CallExpression,
     ErrorLiteral,
     Expression,
@@ -28,6 +29,7 @@ import {
 import {
     ArrayObj,
     Bool,
+    Break,
     Builtin,
     ErrorObj,
     Float,
@@ -68,6 +70,9 @@ export function evalCode(
             if (isError(val)) {
                 return setLineError(node, val);
             }
+            if (val instanceof Break) {
+                return breakError(val.line);
+            }
             const value = env.getCurrScope(letStmt.name.value);
             if (value !== undefined) {
                 return new ErrorObj(
@@ -83,6 +88,9 @@ export function evalCode(
             const val = evalCode(stmt.value, env);
             if (isError(val)) {
                 return setLineError(stmt, val);
+            }
+            if (val instanceof Break) {
+                return breakError(val.line);
             }
             const varEnv = env.getEnv(stmt.name.value);
             if (varEnv === undefined) {
@@ -214,6 +222,9 @@ export function evalCode(
         case ForStatement: {
             return evalForStatement(node as ForStatement, env);
         }
+        case BreakStatement: {
+            return new Break(node.tokenLine());
+        }
         case ErrorLiteral:
             return new ErrorObj(
                 (node as ErrorLiteral).message,
@@ -233,6 +244,9 @@ function evalProgram(
         if (result instanceof ReturnValue) {
             return result.value;
         }
+        if (result instanceof Break) {
+            return breakError(result.line);
+        }
         if (result instanceof ErrorObj) {
             return result;
         }
@@ -249,7 +263,11 @@ function evalBlockStatement(
         result = evalCode(statement, env);
         if (result) {
             const rt = result.type();
-            if (rt === Obj.RETURN_VALUE || rt === Obj.ERROR) {
+            if (
+                rt === Obj.RETURN_VALUE ||
+                rt === Obj.ERROR ||
+                rt === Obj.BREAK
+            ) {
                 return result;
             }
         }
@@ -351,8 +369,15 @@ function evalWhileStatement(we: WhileStatement, env: Environment) {
         return setLineError(we, condition);
     }
     while (isTruthy(condition as IObject)) {
-        evalCode(we.body, blockEnv);
+        const body = evalCode(we.body, blockEnv);
+        if (isError(body)) {
+            return setLineError(we.body, body);
+        }
+        if (body?.type() === Obj.BREAK) return;
         condition = evalCode(we.condition, blockEnv);
+        if (isError(condition)) {
+            return setLineError(we, condition);
+        }
     }
 }
 
@@ -372,11 +397,21 @@ function evalForStatement(
         return setLineError(fs, condition);
     }
     while (isTruthy(condition as IObject)) {
-        evalCode(fs.body, blockEnv);
+        const body = evalCode(fs.body, blockEnv);
+        if (isError(body)) {
+            return setLineError(fs.body, body);
+        }
+        if (body?.type() === Obj.BREAK) return;
         if (fs.update) {
-            evalCode(fs.update, blockEnv);
+            const update = evalCode(fs.update, blockEnv);
+            if (isError(update)) {
+                return setLineError(fs, update);
+            }
         }
         condition = evalCode(fs.condition, blockEnv);
+        if (isError(condition)) {
+            return setLineError(fs, condition);
+        }
     }
     return NULL;
 }
@@ -623,4 +658,8 @@ function setLineError(
         return err;
     }
     return obj;
+}
+
+function breakError(line: number): ErrorObj {
+    return new ErrorObj("can not use break outside of loops", line);
 }

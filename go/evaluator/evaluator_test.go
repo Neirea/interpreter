@@ -280,6 +280,14 @@ func TestErrorHandling(t *testing.T) {
 			"let x = 5; y = 10;",
 			"y is not defined",
 		},
+		{
+			"break;",
+			"can not use break outside of loops",
+		},
+		{
+			"fn(){ break; 1; }();",
+			"can not use break outside of loops",
+		},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -635,6 +643,21 @@ func TestEmptyForStatements(t *testing.T) {
 		{"let i = 0; let x = 0; for( ; i < 5; i = i + 1) { x = x + 1; } x;", 5},
 		{"let i = 5; for(i = 0; i < 3;) { i = i + 1; } i;", 3},
 		{"let i = 0; for(; i < 7;) { i = i + 1; } i;", 7},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestBreakStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let i = 0; let x = 0; for( ; i < 5; i = i + 1) { x = x + 1; break; x = x + 100; } x;", 1},
+		{"let i = 5; while(i < 15) { i = i + 1; if(i > 10) { break; i = i + 100 } } i;", 11},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)

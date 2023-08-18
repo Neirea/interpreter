@@ -29,6 +29,7 @@ test("test lexer", () => {
         macro(x, y) { x + y; };
         while(true) { x + y; }
         for(let i=0;i<3;i=i+1){}
+        break;
 	`;
     const tests: Token[] = [
         { type: token.LET, literal: "let", line: 1 },
@@ -165,7 +166,9 @@ test("test lexer", () => {
         { type: token.RPAREN, literal: ")", line: 27 },
         { type: token.LBRACE, literal: "{", line: 27 },
         { type: token.RBRACE, literal: "}", line: 27 },
-        { type: token.EOF, literal: "EOF", line: 28 },
+        { type: token.BREAK, literal: "break", line: 28 },
+        { type: token.SEMICOLON, literal: ";", line: 28 },
+        { type: token.EOF, literal: "EOF", line: 29 },
     ];
 
     const lexer = new Lexer(input);

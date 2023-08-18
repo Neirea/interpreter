@@ -26,6 +26,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(val) {
 			return setLineError(node, val)
 		}
+		if breakObj, ok := val.(*object.Break); ok {
+			return breakError(breakObj.Line)
+		}
 		_, ok := env.GetCurrScope(node.Name.Value)
 		if ok {
 			return &object.Error{Line: node.TokenLine(), Message: fmt.Sprintf("Identifier %s already exists", node.Name.Value)}
@@ -35,6 +38,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		val := Eval(node.Value, env)
 		if isError(val) {
 			return setLineError(node, val)
+		}
+		if breakObj, ok := val.(*object.Break); ok {
+			return breakError(breakObj.Line)
 		}
 		varEnv, ok := env.GetEnv(node.Name.Value)
 		if !ok {
@@ -139,6 +145,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalWhileStatement(node, env)
 	case *ast.ForStatement:
 		return evalForStatement(node, env)
+	case *ast.BreakStatement:
+		return &object.Break{Line: node.TokenLine()}
 	case *ast.ErrorLiteral:
 		return &object.Error{Message: node.Message, Line: node.TokenLine()}
 	}
@@ -153,6 +161,8 @@ func evalProgram(stmts []ast.Statement, env *object.Environment) object.Object {
 		switch result := result.(type) {
 		case *object.ReturnValue:
 			return result.Value
+		case *object.Break:
+			return breakError(result.Line)
 		case *object.Error:
 			return result
 		}
@@ -166,7 +176,7 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 		result = Eval(statement, env)
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ || rt == object.BREAK_OBJ {
 				return result
 			}
 		}
@@ -268,8 +278,17 @@ func evalWhileStatement(ws *ast.WhileStatement, env *object.Environment) object.
 		return setLineError(ws, condition)
 	}
 	for isTruthy(condition) {
-		Eval(ws.Body, blockEnv)
+		body := Eval(ws.Body, blockEnv)
+		if isError(body) {
+			return setLineError(ws.Body, body)
+		}
+		if body != nil && body.Type() == object.BREAK_OBJ {
+			break
+		}
 		condition = Eval(ws.Condition, blockEnv)
+		if isError(condition) {
+			return setLineError(ws, condition)
+		}
 	}
 	return NULL
 }
@@ -289,9 +308,18 @@ func evalForStatement(fs *ast.ForStatement, env *object.Environment) object.Obje
 	}
 
 	for isTruthy(condition) {
-		Eval(fs.Body, blockEnv)
+		body := Eval(fs.Body, blockEnv)
+		if isError(body) {
+			return setLineError(fs.Body, body)
+		}
+		if body != nil && body.Type() == object.BREAK_OBJ {
+			break
+		}
 		if fs.Update != nil {
-			Eval(fs.Update, blockEnv)
+			update := Eval(fs.Update, blockEnv)
+			if isError(update) {
+				return setLineError(fs, update)
+			}
 		}
 		condition = Eval(fs.Condition, blockEnv)
 	}
@@ -557,4 +585,8 @@ func setLineError(node ast.Node, obj object.Object) object.Object {
 		err.Line = node.TokenLine()
 	}
 	return err
+}
+
+func breakError(line int) *object.Error {
+	return &object.Error{Message: "can not use break outside of loops", Line: line}
 }

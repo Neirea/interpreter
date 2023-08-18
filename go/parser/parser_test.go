@@ -1177,3 +1177,32 @@ func TestEmptyForStatements(t *testing.T) {
 		return
 	}
 }
+
+func TestBreakStatement(t *testing.T) {
+	input := `while (true) { break; }`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
+			1, len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.WhileStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.WhileStatement. got=%T",
+			program.Statements[0])
+	}
+	if len(stmt.Body.Statements) != 1 {
+		t.Errorf("body is not 1 statements. got=%d\n",
+			len(stmt.Body.Statements))
+	}
+	bodyStmt, ok := stmt.Body.Statements[0].(*ast.BreakStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.BreakStatement. got=%T",
+			stmt.Body.Statements[0])
+	}
+	if bodyStmt.String() != "break;" {
+		t.Fatalf("bodyStatement is not 'break'.got=%s", bodyStmt.TokenLiteral())
+	}
+}

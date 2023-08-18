@@ -3,6 +3,7 @@ import {
     AssignExpression,
     BlockStatement,
     BooleanLiteral,
+    BreakStatement,
     CallExpression,
     Expression,
     ExpressionStatement,
@@ -438,6 +439,8 @@ export class Parser {
                 return this.parseWhileStatement();
             case token.FOR:
                 return this.parseForStatement();
+            case token.BREAK:
+                return this.parseBreakStatement();
             default:
                 return this.parseExpressionStatement();
         }
@@ -480,6 +483,12 @@ export class Parser {
             return;
         }
         return stmt;
+    }
+
+    private parseBreakStatement(): BreakStatement | undefined {
+        const tkn = this.curToken;
+        if (this.checkSemicolonError()) return;
+        return new BreakStatement(tkn);
     }
 
     private parseExpressionStatement(): ExpressionStatement | undefined {

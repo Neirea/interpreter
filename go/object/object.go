@@ -23,6 +23,7 @@ const (
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	QUOTE_OBJ        = "QUOTE"
 	MACRO_OBJ        = "MACRO"
+	BREAK_OBJ        = "BREAK"
 	ERROR_OBJ        = "ERROR"
 )
 
@@ -209,3 +210,10 @@ func (m *Macro) Inspect() string {
 
 	return out.String()
 }
+
+type Break struct {
+	Line int
+}
+
+func (b *Break) Type() ObjectType { return BREAK_OBJ }
+func (b *Break) Inspect() string  { return "break" }

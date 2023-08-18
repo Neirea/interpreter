@@ -423,3 +423,17 @@ export class ForStatement implements Statement {
         return `for(${initStr};${this.condition.toString()};${updateStr}) ${this.body.toString()}`;
     }
 }
+
+export class BreakStatement implements Statement {
+    constructor(public token: Token) {}
+    statementNode() {}
+    tokenLine() {
+        return this.token.line;
+    }
+    tokenLiteral() {
+        return this.token.literal;
+    }
+    toString() {
+        return this.token.literal + ";";
+    }
+}

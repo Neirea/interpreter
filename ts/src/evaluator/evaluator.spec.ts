@@ -243,6 +243,14 @@ test("test error handling", () => {
             input: "let x = 5; y = 10;",
             expected: "y is not defined",
         },
+        {
+            input: "break;",
+            expected: "can not use break outside of loops",
+        },
+        {
+            input: "fn(){ break; 1; }();",
+            expected: "can not use break outside of loops",
+        },
     ];
 
     for (const test of tests) {
@@ -568,6 +576,24 @@ test("test empty for statements", () => {
         {
             input: "let i = 0; for(; i < 7;) { i = i + 1; } i;",
             expected: 7,
+        },
+    ];
+
+    for (const test of tests) {
+        const evaluated = testEval(test.input);
+        testIntegerObject(evaluated, test.expected);
+    }
+});
+
+test("test break statements", () => {
+    const tests = [
+        {
+            input: "let i = 0; let x = 0; for( ; i < 5; i = i + 1) { x = x + 1; break; x = x + 100; } x;",
+            expected: 1,
+        },
+        {
+            input: "let i = 5; while(i < 15) { i = i + 1; if(i > 10) { break; i = i + 100 } } i;",
+            expected: 11,
         },
     ];
 

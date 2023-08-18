@@ -311,6 +311,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseWhileStatement()
 	case token.FOR:
 		return p.parseForStatement()
+	case token.BREAK:
+		return p.praseBreakStatement()
 	default:
 		stmt := p.parseExpressionStatement()
 		if stmt == nil {
@@ -358,6 +360,13 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	stmt.ReturnValue = p.parseExpression(LOWEST)
 
+	if p.checkSemicolonError() {
+		return nil
+	}
+	return stmt
+}
+func (p *Parser) praseBreakStatement() *ast.BreakStatement {
+	stmt := &ast.BreakStatement{Token: p.curToken}
 	if p.checkSemicolonError() {
 		return nil
 	}
