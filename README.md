@@ -1,7 +1,7 @@
 # Monkey language interpreter
 
-An implementation of a [Monkey](https://monkeylang.org) interpreter & compiler in Golang and Typescript.
-Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreterbook.com/).
+[Monkey](https://monkeylang.org) interpreter with new features in Golang and Typescript
+based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreterbook.com/).
 
 ## Base Features
 
@@ -18,9 +18,9 @@ Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 ## Additional features
 
 -   **for** and **while** loops
--   **break** to stop current loop within scope
+-   **break** to stop the current loop within the scope
 -   Variable scopes for **if**, **for** and **while** blocks
--   Assign existing variables without **let** keyword
+-   Assign existing variables without keywords **let**
 -   Execute code from files via CLI command
 -   Line number in error message for parser and evaluator
 -   Float numbers (INT + FLOAT = FLOAT, INT + INT = INT)
