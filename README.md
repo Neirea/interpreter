@@ -25,7 +25,7 @@ based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 -   Line number in error message for parser and evaluator
 -   Float numbers (INT + FLOAT = FLOAT, INT + INT = INT)
 -   Allow numbers in identifiers
--   Mandatory semicolon for statements except for functions and if statements
+-   Mandatory semicolon for expression statements
 -   Add items to hashmap via **add** built-in function
 -   LTE(<=),GTE(>=) operators
 -   Fixed bug: "!0" now evaluates correctly to TRUE
