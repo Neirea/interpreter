@@ -18,6 +18,7 @@ Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 ## Additional features
 
 -   **for** and **while** loops
+-   **break** to stop current loop within scope
 -   Variable scopes for **if**, **for** and **while** blocks
 -   Assign existing variables without **let** keyword
 -   Execute code from files via CLI command
@@ -25,6 +26,7 @@ Based on Thorsten Ball's book [Writing an Interpreter in Go](https://interpreter
 -   Float numbers (INT + FLOAT = FLOAT, INT + INT = INT)
 -   Allow numbers in identifiers
 -   Mandatory semicolon for statements except for functions and if statements
+-   Add items to hashmap via **add** built-in function
 -   LTE(<=),GTE(>=) operators
 -   Fixed bug: "!0" now evaluates correctly to TRUE
 
